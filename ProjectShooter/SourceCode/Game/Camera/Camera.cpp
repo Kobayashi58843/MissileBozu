@@ -1,7 +1,7 @@
 #include"Camera.h"
 
 //注視点からカメラまでの距離.
-const float FOCUSING_SPACE_DISTANCE = 5.0f;
+const float FOCUSING_SPACE_DISTANCE = 2.0f;
 
 //回転速度.
 const float DEGREE = 1.0f;
@@ -13,10 +13,7 @@ const float SCOPE = 4.0f;
 const float LOOK_DISTANCE = 500.0f;
 
 //上下の限界の角度.
-const int MAX_ANGLE_DEGREE = 10;
-
-//どれだけ横にずらすか.
-const float DISPLACE_HORIZONTALLY = 0.8f;
+const int MAX_ANGLE_DEGREE = 20;
 
 //距離の限界.
 const float DISTANCE_MAX = 8.0f;
@@ -94,7 +91,7 @@ void Camera::Update()
 	D3DXMatrixInverse(&m_mView, 0, &m_mView);
 
 	//横にずらす.
-	m_mView.m[3][0] += DISPLACE_HORIZONTALLY;
+	m_mView.m[3][0] += m_fDisplaceHorizontally;
 
 	//プロジェクション(射影行列)変換.
 	Projection();

@@ -98,6 +98,12 @@ public:
 		m_fDisplaceHorizontally = fDisplace;
 	}
 
+	//注視位置からの距離.
+	float GetDistance() const
+	{
+		return D3DXVec3Length(&m_vFocusingSpacePos);
+	}
+
 	//レイとメッシュの衝突時.
 	void RayHitToMesh(clsDX9Mesh* const pTarget);
 

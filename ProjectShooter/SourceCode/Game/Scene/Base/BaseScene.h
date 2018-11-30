@@ -6,6 +6,7 @@
 #include "..\\..\\..\\Singleton.h"
 
 #include "..\\..\\Camera\\Camera.h"
+#include "..\\..\\Camera\\EventCamera.h"
 
 #include "..\\..\\Model\\ModelResource\\ModelResource.h"
 

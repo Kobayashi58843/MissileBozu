@@ -8,7 +8,7 @@ StartingScene::StartingScene(SCENE_NEED_POINTER PointerGroup)
 	: BaseScene(PointerGroup)
 	, m_pOneFrameSprite(nullptr)
 	, m_pOneFrameBuff(nullptr)
-	, m_pCamera(nullptr)
+	, m_pEventCamera(nullptr)
 	, m_pPlayerModel(nullptr)
 	, m_pEnemyModel(nullptr)
 {
@@ -30,7 +30,7 @@ void StartingScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	CreateSprite();
 
 	//カメラを作成.
-	m_pCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
+	m_pEventCamera = new EventCamera(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//スキンモデルの作成.
 	m_pPlayerModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Player), 0.0005f, 0);
@@ -46,7 +46,7 @@ void StartingScene::Release()
 	SAFE_DELETE(m_pEnemyModel);
 	SAFE_DELETE(m_pPlayerModel);
 
-	SAFE_DELETE(m_pCamera);
+	SAFE_DELETE(m_pEventCamera);
 
 	SAFE_DELETE(m_pOneFrameBuff);
 	SAFE_DELETE(m_pOneFrameSprite);
@@ -57,6 +57,13 @@ void StartingScene::Release()
 //更新.
 void StartingScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 {
+#if _DEBUG
+
+	//デバッグ中のみの操作.
+	DebugKeyControl();
+
+#endif //#if _DEBUG.
+
 	//BGMをループで再生.
 	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Clear);
 
@@ -64,7 +71,7 @@ void StartingScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	UpdateSprite();
 
 	//カメラ更新.
-	m_pCamera->Update();
+	m_pEventCamera->Update();
 
 	//左クリックされた時.
 	if (Singleton<RawInput>().GetInstance().IsLButtonDown())
@@ -76,8 +83,8 @@ void StartingScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 //3Dモデルの描画.
 void StartingScene::RenderModelProduct(const int iRenderLevel)
 {
-	D3DXMATRIX mView = m_pCamera->GetView();
-	D3DXMATRIX mProj = m_pCamera->GetProjection();
+	D3DXMATRIX mView = m_pEventCamera->GetView();
+	D3DXMATRIX mProj = m_pEventCamera->GetProjection();
 
 	switch (iRenderLevel)
 	{
@@ -92,10 +99,16 @@ void StartingScene::RenderModelProduct(const int iRenderLevel)
 		m_SceneNeedPointer.pContext->ClearRenderTargetView(m_pOneFrameBuff->GetRenderTargetView(), fClearColor);
 		m_SceneNeedPointer.pContext->ClearDepthStencilView(m_SceneNeedPointer.pBackBuffer_DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-		//カメラの位置を調整.
+		//プレイヤーモデルの少し上をカメラの注視位置にする.
 		D3DXVECTOR3 vLookAt = m_pPlayerModel->GetPos();
-		vLookAt.y += 1.5f;
-		m_pCamera->SetLookAt(vLookAt);
+		vLookAt.y += 1.2f;
+		m_pEventCamera->SetLookAt(vLookAt);
+		
+		//カメラの位置を注視位置から少し離れたところに変える.
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y + 0.25f, vLookAt.z - 0.8f });
+
+		//カメラの上方方向を斜めにする.
+		m_pEventCamera->SetUpVector({ -0.75f, 0.5f, 0.0f });
 
 		//モデルを描画.
 		m_pPlayerModel->RenderModel(mView, mProj);
@@ -212,6 +225,8 @@ void StartingScene::UpdateSpritePositio(int iSpriteNo)
 	}
 
 	m_vpSprite[iSpriteNo]->SetPos(vPosition.x, vPosition.y);
+
+	m_pOneFrameSprite->SetPos(vPosition.x, vPosition.y);
 }
 
 //スプライトのアニメーション.
@@ -238,6 +253,26 @@ void StartingScene::RenderDebugText()
 
 	sprintf_s(cStrDbgTxt, "Scene : Starting");
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 0));
+
+	sprintf_s(cStrDbgTxt, "SpriteSize : ( %f, %f )", m_pOneFrameSprite->GetSize().x, m_pOneFrameSprite->GetSize().y);
+	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 1));
+
+	sprintf_s(cStrDbgTxt, "SpriteScale : [%f]", m_pOneFrameSprite->GetScale());
+	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 2));
+}
+
+//デバッグ中のみの操作.
+void StartingScene::DebugKeyControl()
+{
+	float fRotSpeed = 0.01f;
+	if (GetAsyncKeyState('Q') & 0x8000)
+	{
+		//m_pEventCamera->AddUpVector(fRotSpeed);
+	}
+	else if (GetAsyncKeyState('E') & 0x8000)
+	{
+		//m_pEventCamera->AddUpVector(-fRotSpeed);
+	}
 }
 
 #endif //#if _DEBUG.

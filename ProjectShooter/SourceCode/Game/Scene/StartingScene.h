@@ -27,7 +27,7 @@ private:
 	void RenderSpriteProduct(const int iRenderLevel);
 
 	/*====/ カメラ関連 /====*/
-	Camera* m_pCamera;
+	EventCamera* m_pEventCamera;
 
 	/*====/ モデル関連 /====*/
 	EventModel* m_pPlayerModel;
@@ -56,6 +56,9 @@ private:
 
 	//デバッグテキストの表示.
 	void RenderDebugText();
+
+	//デバッグ中のみの操作.
+	void DebugKeyControl();
 
 #endif //#if _DEBUG.
 

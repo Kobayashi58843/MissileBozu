@@ -209,6 +209,9 @@
     <ClInclude Include="SourceCode\Game\Model\Character\Event\EventModel.h">
       <Filter>ソース ファイル\Game\Model\Character\Event</Filter>
     </ClInclude>
+    <ClInclude Include="SourceCode\Game\Camera\EventCamera.h">
+      <Filter>ソース ファイル\Game\Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SourceCode\Main.cpp">
@@ -342,6 +345,9 @@
     </ClCompile>
     <ClCompile Include="SourceCode\Game\Model\Character\Event\EventModel.cpp">
       <Filter>ソース ファイル\Game\Model\Character\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\Game\Camera\EventCamera.cpp">
+      <Filter>ソース ファイル\Game\Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

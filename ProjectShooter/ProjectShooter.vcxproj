@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClInclude Include="SourceCode\Game\BackBuffer.h" />
     <ClInclude Include="SourceCode\Game\Camera\Camera.h" />
+    <ClInclude Include="SourceCode\Game\Camera\EventCamera.h" />
     <ClInclude Include="SourceCode\Game\Direct3D.h" />
     <ClInclude Include="SourceCode\Game\Effekseer\CEffects.h" />
     <ClInclude Include="SourceCode\Game\Game.h" />
@@ -63,6 +64,7 @@
   <ItemGroup>
     <ClCompile Include="SourceCode\Game\BackBuffer.cpp" />
     <ClCompile Include="SourceCode\Game\Camera\Camera.cpp" />
+    <ClCompile Include="SourceCode\Game\Camera\EventCamera.cpp" />
     <ClCompile Include="SourceCode\Game\Direct3D.cpp" />
     <ClCompile Include="SourceCode\Game\Effekseer\CEffects.cpp" />
     <ClCompile Include="SourceCode\Game\Game.cpp" />
