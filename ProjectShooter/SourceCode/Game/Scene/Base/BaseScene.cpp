@@ -104,43 +104,43 @@ bool BaseScene::IsHittingOfSprite(int iSourceSpriteNo, int iTargetSpriteNo)
 //入力情報の更新.
 void BaseScene::InputUpdate(enSwitchToNextScene &enNextScene)
 {
-	//シーン切り替え.
-	if(GetAsyncKeyState(VK_F1) & 0x1)
-	{
-		enNextScene = enSwitchToNextScene::Starting;
-	}
-	else if (GetAsyncKeyState(VK_F2) & 0x1)
-	{
-		enNextScene = enSwitchToNextScene::Title;
-	}
-	else if (GetAsyncKeyState(VK_F3) & 0x1)
-	{
-		enNextScene = enSwitchToNextScene::StartEvent;
-	}
-	else if (GetAsyncKeyState(VK_F4) & 0x1)
-	{
-		enNextScene = enSwitchToNextScene::Action;
-	}
-	else if (GetAsyncKeyState(VK_F5) & 0x1)
-	{
-		enNextScene = enSwitchToNextScene::Winning;
-	}
-	else if (GetAsyncKeyState(VK_F6) & 0x1)
-	{
-		enNextScene = enSwitchToNextScene::Clear;
-	}
-	else if (GetAsyncKeyState(VK_F7) & 0x1)
-	{
-		enNextScene = enSwitchToNextScene::Loser;
-	}
-	else if (GetAsyncKeyState(VK_F8) & 0x1)
-	{
-		enNextScene = enSwitchToNextScene::Continue;
-	}
-	else if (GetAsyncKeyState(VK_F9) & 0x1)
-	{
-		enNextScene = enSwitchToNextScene::Over;
-	}
+	////シーン切り替え.
+	//if(GetAsyncKeyState(VK_F1) & 0x1)
+	//{
+	//	enNextScene = enSwitchToNextScene::Starting;
+	//}
+	//else if (GetAsyncKeyState(VK_F2) & 0x1)
+	//{
+	//	enNextScene = enSwitchToNextScene::Title;
+	//}
+	//else if (GetAsyncKeyState(VK_F3) & 0x1)
+	//{
+	//	enNextScene = enSwitchToNextScene::StartEvent;
+	//}
+	//else if (GetAsyncKeyState(VK_F4) & 0x1)
+	//{
+	//	enNextScene = enSwitchToNextScene::Action;
+	//}
+	//else if (GetAsyncKeyState(VK_F5) & 0x1)
+	//{
+	//	enNextScene = enSwitchToNextScene::Winning;
+	//}
+	//else if (GetAsyncKeyState(VK_F6) & 0x1)
+	//{
+	//	enNextScene = enSwitchToNextScene::Clear;
+	//}
+	//else if (GetAsyncKeyState(VK_F7) & 0x1)
+	//{
+	//	enNextScene = enSwitchToNextScene::Loser;
+	//}
+	//else if (GetAsyncKeyState(VK_F8) & 0x1)
+	//{
+	//	enNextScene = enSwitchToNextScene::Continue;
+	//}
+	//else if (GetAsyncKeyState(VK_F9) & 0x1)
+	//{
+	//	enNextScene = enSwitchToNextScene::Over;
+	//}
 }
 
 #endif //#if _DEBUG.

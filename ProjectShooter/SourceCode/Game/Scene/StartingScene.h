@@ -37,6 +37,11 @@ private:
 	DisplayBackBuffer*	m_pOneFrameSprite;
 	BackBuffer*			m_pOneFrameBuff;
 
+	//シーン切り替え時のフェード用画像.
+	TransitionsSprite*	m_pFadeSprite;
+	Sprite*				m_pFadeMaskSprite;
+	BackBuffer*			m_pFadeMaskBuffer;
+
 	//演出の段階.
 	int m_iPhase;
 
@@ -69,6 +74,12 @@ private:
 
 	//演出の各段階の初期化.
 	void PhaseInit(const int iPhase);
+
+	//フェード.
+	bool FadeOut();
+	bool FadeIn();
+
+	void RenderFadeMaskBuffer();
 
 #if _DEBUG
 
