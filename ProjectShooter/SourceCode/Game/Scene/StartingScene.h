@@ -37,6 +37,12 @@ private:
 	DisplayBackBuffer*	m_pOneFrameSprite;
 	BackBuffer*			m_pOneFrameBuff;
 
+	//演出の段階.
+	int m_iPhase;
+
+	//演出が進んだタイミング用.
+	bool m_bWhenProgress;
+
 	//スプライトの作成.
 	void CreateSprite();
 
@@ -51,6 +57,18 @@ private:
 
 	//スプライトのアニメーション.
 	void UpdateSpriteAnimation(int iSpriteNo);
+
+	//演出の段階ごとの描画.
+	void PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, const int iPhase);
+
+	//演出の段階ごとのカメラ操作.
+	void PhaseCameraControl(const int iPhase);
+
+	//演出の各段階の進行.
+	void PhaseProgress(const int iPhase);
+
+	//演出の各段階の初期化.
+	void PhaseInit(const int iPhase);
 
 #if _DEBUG
 

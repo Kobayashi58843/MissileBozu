@@ -25,6 +25,10 @@ public:
 	{
 		m_vPos = vPos;
 	}
+	void AddPos(const D3DXVECTOR3 vAdd)
+	{
+		m_vPos += vAdd;
+	}
 	D3DXVECTOR3 GetPos() const
 	{
 		return m_vPos;
@@ -34,6 +38,10 @@ public:
 	void SetLookAt(const D3DXVECTOR3 vLookAt)
 	{
 		m_vLookAt = vLookAt;
+	}
+	void AddLookAt(const D3DXVECTOR3 vAdd)
+	{
+		m_vLookAt += vAdd;
 	}
 	D3DXVECTOR3 GetLookAt() const
 	{

@@ -9,6 +9,16 @@ public:
 	EventModel(clsD3DXSKINMESH* const pModel, const float fScale, const double dAnimSpeed);
 	~EventModel();
 
+	//ˆÊ’u.
+	void SetPos(const D3DXVECTOR3 vPos)
+	{
+		m_vPos = vPos;
+	}
+	D3DXVECTOR3 GetPos() const
+	{
+		return m_vPos;
+	}
+
 	//3Dƒ‚ƒfƒ‹‚Ì•`‰æ.
 	void RenderModel(const D3DXMATRIX &mView, const D3DXMATRIX &mProj);
 

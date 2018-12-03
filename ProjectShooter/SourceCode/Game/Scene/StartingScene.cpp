@@ -2,7 +2,11 @@
 
 #include "..\\..\\Singleton.h"
 
+//モデルの初期アニメーション速度.
 const double ANIMETION_SPEED = 0.01;
+
+//演出の段階の最大数.
+const int MAX_PHASE = 5;
 
 StartingScene::StartingScene(SCENE_NEED_POINTER PointerGroup)
 	: BaseScene(PointerGroup)
@@ -11,6 +15,8 @@ StartingScene::StartingScene(SCENE_NEED_POINTER PointerGroup)
 	, m_pEventCamera(nullptr)
 	, m_pPlayerModel(nullptr)
 	, m_pEnemyModel(nullptr)
+	, m_iPhase(0)
+	, m_bWhenProgress(true)
 {
 	//全サウンドを停止する.
 	Singleton<SoundManager>().GetInstance().StopSound();
@@ -73,8 +79,8 @@ void StartingScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	//カメラ更新.
 	m_pEventCamera->Update();
 
-	//左クリックされた時.
-	if (Singleton<RawInput>().GetInstance().IsLButtonDown())
+	//次のシーンへ.
+	if (m_iPhase >= MAX_PHASE)
 	{
 		enNextScene = enSwitchToNextScene::Title;
 	}
@@ -99,27 +105,12 @@ void StartingScene::RenderModelProduct(const int iRenderLevel)
 		m_SceneNeedPointer.pContext->ClearRenderTargetView(m_pOneFrameBuff->GetRenderTargetView(), fClearColor);
 		m_SceneNeedPointer.pContext->ClearDepthStencilView(m_SceneNeedPointer.pBackBuffer_DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-		//プレイヤーモデルの少し上をカメラの注視位置にする.
-		D3DXVECTOR3 vLookAt = m_pPlayerModel->GetPos();
-		vLookAt.y += 1.2f;
-		m_pEventCamera->SetLookAt(vLookAt);
-		
-		//カメラの位置を注視位置から少し離れたところに変える.
-		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y + 0.25f, vLookAt.z - 0.8f });
-
-		//カメラの上方方向を斜めにする.
-		m_pEventCamera->SetUpVector({ -0.75f, 0.5f, 0.0f });
-
-		//モデルを描画.
-		m_pPlayerModel->RenderModel(mView, mProj);
+		//演出の段階ごとの描画.
+		PhaseDrawing(mView, mProj, m_iPhase);
 
 		//レンダーターゲットを元に戻す.
 		m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &m_SceneNeedPointer.pBackBuffer_RTV, m_SceneNeedPointer.pBackBuffer_DSV);
 	}
-		break;
-	case 1:
-		m_pEnemyModel->RenderModel(mView, mProj);
-
 		break;
 	default:
 		break;
@@ -133,6 +124,9 @@ void StartingScene::RenderSpriteProduct(const int iRenderLevel)
 	switch (iRenderLevel)
 	{
 	case 0:
+		//3Dモデルの描画側でGBuffer用のものを描画しているので.
+		//スプライトでも描画したいものがあるならここで描画する.
+
 		break;
 	case 1:
 		m_pOneFrameSprite->Render();
@@ -244,6 +238,217 @@ void StartingScene::UpdateSpriteAnimation(int iSpriteNo)
 	}
 }
 
+//演出の段階ごとの描画.
+void StartingScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, const int iPhase)
+{
+	//初期化.
+	PhaseInit(iPhase);
+
+	//カメラの操作.
+	PhaseCameraControl(iPhase);
+
+	switch (iPhase)
+	{
+	case 0:
+	case 1:
+		m_pPlayerModel->RenderModel(mView, mProj);
+
+		break;
+	case 2:
+	case 3:
+		m_pEnemyModel->RenderModel(mView, mProj);
+
+		break;
+	case 4:
+		m_pPlayerModel->RenderModel(mView, mProj);
+
+		break;
+	default:
+		break;
+	}
+
+	//進行.
+	PhaseProgress(iPhase);
+}
+
+//演出の段階ごとのカメラ操作.
+void StartingScene::PhaseCameraControl(const int iPhase)
+{
+	switch (iPhase)
+	{
+	case 0:
+		m_pEventCamera->AddPos({ 0.0f, 0.0f, -0.004f });
+
+		break;
+	case 1:
+		m_pEventCamera->AddPos({ 0.0f, 0.0f, -0.002f });
+
+		break;
+	case 2:
+		if (m_pEventCamera->GetLookAt().y >= 0.8f)
+		{
+			m_pEventCamera->AddLookAt({ 0.0f, 0.005f, 0.0f });
+			m_pEventCamera->AddPos({ 0.0f, 0.0f, -0.005f });
+		}
+		else
+		{
+			m_pEventCamera->AddLookAt({ 0.0f, 0.01f, 0.0f });
+		}
+
+		break;
+	case 3:
+		m_pEventCamera->AddPos({ 0.0f, 0.0f, -0.002f });
+
+		break;
+	case 4:
+		m_pEventCamera->AddLookAt({ 0.0f, 0.05f, 0.0f });
+
+		break;
+	default:
+		break;
+	}
+}
+
+//演出の段階の進行.
+void StartingScene::PhaseProgress(const int iPhase)
+{
+	switch (iPhase)
+	{
+	case 0:
+		if (m_pEventCamera->GetPos().z <= -1.5f)
+		{
+			m_iPhase++;
+			m_bWhenProgress = true;
+		}
+
+		break;
+	case 1:
+		if (m_pEventCamera->GetPos().z <= -3.0f)
+		{
+			m_iPhase++;
+			m_bWhenProgress = true;
+		}
+
+		break;
+	case 2:
+		if (m_pEventCamera->GetPos().z <= -2.0f)
+		{
+			m_iPhase++;
+			m_bWhenProgress = true;
+		}
+
+
+		break;
+	case 3:
+		if (m_pEventCamera->GetPos().z <= -5.5f)
+		{
+			m_iPhase++;
+			m_bWhenProgress = true;
+		}
+
+		break;
+	case 4:
+		if (m_pEventCamera->GetLookAt().y >= 8.0f)
+		{
+			m_iPhase++;
+			m_bWhenProgress = true;
+		}
+
+		break;
+	default:
+		break;
+	}
+}
+
+//演出の各段階の初期化.
+void StartingScene::PhaseInit(const int iPhase)
+{
+	if (!m_bWhenProgress)
+	{
+		return;
+	}
+
+	//注視位置をクリア.
+	D3DXVECTOR3 vLookAt;
+	CrearVECTOR3(vLookAt);
+
+	switch (iPhase)
+	{
+	case 0:
+		//カメラの注視位置を設定する.
+		vLookAt = m_pPlayerModel->GetPos();
+		vLookAt.y += 1.2f;
+		m_pEventCamera->SetLookAt(vLookAt);
+
+		//カメラの位置を設定する.
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y + 0.25f, vLookAt.z - 0.8f });
+
+		//カメラの上方方向を設定する
+		m_pEventCamera->SetUpVector({ -0.75f, 0.5f, 0.0f });
+
+		break;
+	case 1:
+		//カメラの注視位置を設定する.
+		vLookAt = m_pPlayerModel->GetPos();
+		vLookAt.x += 0.5f;
+		vLookAt.y += 1.0f;
+		m_pEventCamera->SetLookAt(vLookAt);
+
+		//カメラの位置を設定する.
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 2.5f });
+
+		//カメラの上方方向を設定する
+		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+
+		break;
+	case 2:
+		//カメラの注視位置を設定する.
+		vLookAt = m_pPlayerModel->GetPos();
+		m_pEventCamera->SetLookAt(vLookAt);
+
+		//カメラの位置を設定する.
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y + 2.0f, vLookAt.z - 1.5f });
+
+		//カメラの上方方向を設定する
+		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+
+		break;
+	case 3:
+		//カメラの注視位置を設定する.
+		vLookAt = m_pPlayerModel->GetPos();
+		vLookAt.x += 1.0f;
+		vLookAt.y += 2.0f;
+		m_pEventCamera->SetLookAt(vLookAt);
+
+		//カメラの位置を設定する.
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 5.0f });
+
+		//カメラの上方方向を設定する
+		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+
+		break;
+	case 4:
+		//カメラの注視位置を設定する.
+		CrearVECTOR3(vLookAt);
+		vLookAt.y -= 8.0f;
+
+		//カメラの位置を設定する.
+		m_pEventCamera->SetPos({ vLookAt.x, 2.0f, vLookAt.z - 5.0f });
+
+		//カメラの上方方向を設定する
+		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+
+		//モデルの位置を設定.
+		m_pPlayerModel->SetPos({ 0.0f, 0.0f, 0.0f });
+
+		break;
+	default:
+		break;
+	}
+
+	m_bWhenProgress = false;
+}
+
 #if _DEBUG
 
 //デバッグテキストの表示.
@@ -259,19 +464,28 @@ void StartingScene::RenderDebugText()
 
 	sprintf_s(cStrDbgTxt, "SpriteScale : [%f]", m_pOneFrameSprite->GetScale());
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 2));
+
+	sprintf_s(cStrDbgTxt, "Phase : [%i]", m_iPhase);
+	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 3));
 }
 
 //デバッグ中のみの操作.
 void StartingScene::DebugKeyControl()
 {
-	float fRotSpeed = 0.01f;
-	if (GetAsyncKeyState('Q') & 0x8000)
+	if (GetAsyncKeyState('1') & 0x1)
 	{
-		//m_pEventCamera->AddUpVector(fRotSpeed);
+		m_iPhase--;
+		if (m_iPhase < 0)
+		{
+			m_iPhase = 0;
+		}
 	}
-	else if (GetAsyncKeyState('E') & 0x8000)
+	if (GetAsyncKeyState('2') & 0x1)
 	{
-		//m_pEventCamera->AddUpVector(-fRotSpeed);
+		if (m_iPhase + 1 < MAX_PHASE)
+		{
+			m_iPhase++;
+		}
 	}
 }
 
