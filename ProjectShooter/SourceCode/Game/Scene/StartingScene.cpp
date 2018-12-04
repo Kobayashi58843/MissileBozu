@@ -31,7 +31,7 @@ StartingScene::StartingScene(SCENE_NEED_POINTER PointerGroup)
 
 	D3DXVECTOR2 vDivisionQuantity = { 1.0f, 1.0f };
 	m_pFadeSprite = new TransitionsSprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	m_pFadeSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Fade.jpg");
+	m_pFadeSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\White.jpg");
 	m_pFadeSprite->SetMaskTexture(m_pFadeMaskBuffer->GetShaderResourceView());
 
 	m_pFadeMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
@@ -71,11 +71,11 @@ void StartingScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	m_pEventCamera = new EventCamera(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//スキンモデルの作成.
-	m_pPlayerModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Player), 0.0005f, 0);
+	m_pPlayerModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Player), 0.0005f, ANIMETION_SPEED);
 	m_pPlayerModel->ChangeAnimation(1);
 
-	m_pEnemyModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Enemy), 0.08f, 0);
-	m_pEnemyModel->ChangeAnimation(2);
+	m_pEnemyModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Enemy), 0.08f, ANIMETION_SPEED);
+	m_pEnemyModel->ChangeAnimation(5);
 }
 
 //解放.
@@ -312,9 +312,11 @@ void StartingScene::UpdateSpriteAnimation(int iSpriteNo)
 
 		break;
 	case enSprite_PlayerText:
+		m_vpSprite[iSpriteNo]->SetScale(1.5f);
 
 		break;
 	case enSprite_EnemyText:
+		m_vpSprite[iSpriteNo]->SetScale(1.5f);
 
 		break;
 	default:
@@ -501,10 +503,9 @@ void StartingScene::PhaseInit(const int iPhase)
 		m_pEventCamera->SetLookAt(vLookAt);
 
 		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y + 0.25f, vLookAt.z - 0.8f });
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 0.8f });
 
-		//カメラの上方方向を設定する
-		m_pEventCamera->SetUpVector({ -0.75f, 0.5f, 0.0f });
+		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.8f });
 
 		m_pPlayerModel->SetPos({ 0.0f, 0.0f, 0.0f });
 
@@ -523,8 +524,7 @@ void StartingScene::PhaseInit(const int iPhase)
 		//カメラの位置を設定する.
 		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 2.5f });
 
-		//カメラの上方方向を設定する
-		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
 
 		m_pPlayerModel->SetPos({ 0.0f, 0.0f, 0.0f });
 
@@ -539,10 +539,9 @@ void StartingScene::PhaseInit(const int iPhase)
 		m_pEventCamera->SetLookAt(vLookAt);
 
 		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y + 2.0f, vLookAt.z - 1.5f });
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y + 1.0f, vLookAt.z - 1.5f });
 
-		//カメラの上方方向を設定する
-		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
 
 		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 0.0f });
 
@@ -561,8 +560,7 @@ void StartingScene::PhaseInit(const int iPhase)
 		//カメラの位置を設定する.
 		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 5.0f });
 
-		//カメラの上方方向を設定する
-		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
 
 		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 0.0f });
 
@@ -578,10 +576,9 @@ void StartingScene::PhaseInit(const int iPhase)
 		m_pEventCamera->SetLookAt(vLookAt);
 
 		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x, 1.5f, vLookAt.z - 4.0f });
+		m_pEventCamera->SetPos({ vLookAt.x, 0.5f, vLookAt.z - 4.0f });
 
-		//カメラの上方方向を設定する
-		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
 
 		//モデルの位置を設定.
 		{
@@ -703,21 +700,6 @@ void StartingScene::RenderDebugText()
 //デバッグ中のみの操作.
 void StartingScene::DebugKeyControl()
 {
-	if (GetAsyncKeyState('1') & 0x1)
-	{
-		m_iPhase--;
-		if (m_iPhase < 0)
-		{
-			m_iPhase = 0;
-		}
-	}
-	if (GetAsyncKeyState('2') & 0x1)
-	{
-		if (m_iPhase + 1 < MAX_PHASE)
-		{
-			m_iPhase++;
-		}
-	}
 }
 
 #endif //#if _DEBUG.

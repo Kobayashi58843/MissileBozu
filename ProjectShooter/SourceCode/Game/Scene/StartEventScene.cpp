@@ -13,24 +13,27 @@ const float FADE_SPEED = 0.1f;
 
 StartEventScene::StartEventScene(SCENE_NEED_POINTER PointerGroup)
 	: BaseScene(PointerGroup)
-	, m_pOneFrameSprite(nullptr)
-	, m_pOneFrameBuff(nullptr)
+	, m_iTime(0)
+	, m_pModelSprite(nullptr)
+	, m_pModelBuff(nullptr)
 	, m_pEventCamera(nullptr)
+	, m_pModelSpriteCamera(nullptr)
 	, m_pPlayerModel(nullptr)
+	, m_pGround(nullptr)
 	, m_iPhase(0)
 	, m_bWhenProgress(true)
 {
 	//全サウンドを停止する.
 	Singleton<SoundManager>().GetInstance().StopSound();
 
-	m_pOneFrameBuff = new BackBuffer(m_SceneNeedPointer.pDevice, static_cast<UINT>(WINDOW_WIDTH), static_cast<UINT>(WINDOW_HEIGHT));
+	m_pModelBuff = new BackBuffer(m_SceneNeedPointer.pDevice, static_cast<UINT>(WINDOW_WIDTH), static_cast<UINT>(WINDOW_HEIGHT));
 
 	/*====/ フェード用スプライト関連 /====*/
 	m_pFadeMaskBuffer = new BackBuffer(m_SceneNeedPointer.pDevice, static_cast<UINT>(WINDOW_WIDTH), static_cast<UINT>(WINDOW_HEIGHT));
 
 	D3DXVECTOR2 vDivisionQuantity = { 1.0f, 1.0f };
 	m_pFadeSprite = new TransitionsSprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	m_pFadeSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Fade.jpg");
+	m_pFadeSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\White.jpg");
 	m_pFadeSprite->SetMaskTexture(m_pFadeMaskBuffer->GetShaderResourceView());
 
 	m_pFadeMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
@@ -69,20 +72,27 @@ void StartEventScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	//カメラを作成.
 	m_pEventCamera = new EventCamera(WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	m_pModelSpriteCamera = new EventCamera(WINDOW_WIDTH, WINDOW_HEIGHT);
+
 	//スキンモデルの作成.
-	m_pPlayerModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Player), 0.0005f, 0);
+	m_pPlayerModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Player), 0.0005f, ANIMETION_SPEED);
 	m_pPlayerModel->ChangeAnimation(1);
+
+	m_pGround = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_Ground);
 }
 
 //解放.
 void StartEventScene::Release()
 {
+	m_pGround = nullptr;
+
 	SAFE_DELETE(m_pPlayerModel);
 
+	SAFE_DELETE(m_pModelSpriteCamera);
 	SAFE_DELETE(m_pEventCamera);
 
-	SAFE_DELETE(m_pOneFrameBuff);
-	SAFE_DELETE(m_pOneFrameSprite);
+	SAFE_DELETE(m_pModelBuff);
+	SAFE_DELETE(m_pModelSprite);
 
 	ReleaseSprite();
 }
@@ -100,11 +110,14 @@ void StartEventScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	//BGMをループで再生.
 	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Clear);
 
+	m_iTime++;
+
 	//スプライト更新.
 	UpdateSprite();
 
 	//カメラ更新.
 	m_pEventCamera->Update();
+	m_pModelSpriteCamera->Update();
 
 	//次のシーンへ.
 	if (m_iPhase >= MAX_PHASE)
@@ -124,21 +137,30 @@ void StartEventScene::RenderModelProduct(const int iRenderLevel)
 	case 0:
 	{
 		//レンダーターゲットをセット.
-		ID3D11RenderTargetView* pRTV = m_pOneFrameBuff->GetRenderTargetView();
+		ID3D11RenderTargetView* pRTV = m_pModelBuff->GetRenderTargetView();
 		m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &pRTV, m_SceneNeedPointer.pBackBuffer_DSV);
 
 		//画面のクリア.
 		const float fClearColor[4] = { 1.0f, 1.0f, 1.0f, 0.0f };
-		m_SceneNeedPointer.pContext->ClearRenderTargetView(m_pOneFrameBuff->GetRenderTargetView(), fClearColor);
+		m_SceneNeedPointer.pContext->ClearRenderTargetView(m_pModelBuff->GetRenderTargetView(), fClearColor);
 		m_SceneNeedPointer.pContext->ClearDepthStencilView(m_SceneNeedPointer.pBackBuffer_DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-		//演出の段階ごとの描画.
-		PhaseDrawing(mView, mProj, m_iPhase);
+		ModelControl(m_pModelSpriteCamera->GetView(), m_pModelSpriteCamera->GetProjection(),m_iPhase);
 
 		//レンダーターゲットを元に戻す.
 		m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &m_SceneNeedPointer.pBackBuffer_RTV, m_SceneNeedPointer.pBackBuffer_DSV);
 	}
 	break;
+	case 1:
+		m_pGround->Render(mView, mProj);
+
+		//演出の段階ごとの描画.
+		PhaseDrawing(mView, mProj, m_iPhase);
+
+		break;
+	case MAX_RENDER_LEVEL:
+
+		break;
 	default:
 		break;
 	}
@@ -151,16 +173,24 @@ void StartEventScene::RenderSpriteProduct(const int iRenderLevel)
 	switch (iRenderLevel)
 	{
 	case 0:
-		//3Dモデルの描画側でGBuffer用のものを描画しているので.
-		//スプライトでも描画したいものがあるならここで描画する.
 		m_vpSprite[enSprite_BackGround]->Render();
 
 		break;
 	case 1:
-		m_pOneFrameSprite->Render();
+		if (m_iPhase == 1 || m_iPhase == 3 || m_iPhase == 5)
+		{
+			m_vpSprite[enSprite_Number]->Render();
+		}
+
+		if (m_iPhase == 7)
+		{
+			m_vpSprite[enSprite_Fire]->Render();
+		}
 
 		break;
 	case MAX_RENDER_LEVEL:
+		m_pModelSprite->Render();
+		
 		//フェード用画像の描画.
 		m_pFadeSprite->Render();
 
@@ -189,6 +219,14 @@ void StartEventScene::CreateSprite()
 			, { 1.0f, 1.0f } };				//元画像を何分割するか.
 
 			break;
+		case enSprite_Number:
+			SpriteData = { "Data\\Image\\Number.png", { 1.0f, 3.0f } };
+
+			break;
+		case enSprite_Fire:
+			SpriteData = { "Data\\Image\\Fire.png", { 1.0f, 1.0f } };
+
+			break;
 		default:
 			ERR_MSG("Clear::CreateSprite()", "error");
 
@@ -200,9 +238,9 @@ void StartEventScene::CreateSprite()
 		m_vpSprite[i]->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, SpriteData.sPath);
 	}
 
-	m_pOneFrameSprite = new DisplayBackBuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
-	m_pOneFrameSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext);
-	m_pOneFrameSprite->SetSRV(m_pOneFrameBuff->GetShaderResourceView());
+	m_pModelSprite = new DisplayBackBuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
+	m_pModelSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext);
+	m_pModelSprite->SetSRV(m_pModelBuff->GetShaderResourceView());
 }
 
 //スプライトの解放.
@@ -245,6 +283,16 @@ void StartEventScene::UpdateSpritePositio(int iSpriteNo)
 		vPosition.y = fWindowHeightCenter;
 
 		break;
+	case enSprite_Number:
+		vPosition.x = fWindowWidthCenter;
+		vPosition.y = fWindowHeightCenter;
+
+		break;
+	case enSprite_Fire:
+		vPosition.x = fWindowWidthCenter;
+		vPosition.y = fWindowHeightCenter;
+
+		break;
 	default:
 		ERR_MSG("Clear::UpdateSpritePositio()", "error");
 
@@ -253,7 +301,7 @@ void StartEventScene::UpdateSpritePositio(int iSpriteNo)
 
 	m_vpSprite[iSpriteNo]->SetPos(vPosition.x, vPosition.y);
 
-	m_pOneFrameSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
+	m_pModelSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
 }
 
 //スプライトのアニメーション.
@@ -262,6 +310,12 @@ void StartEventScene::UpdateSpriteAnimation(int iSpriteNo)
 	switch (iSpriteNo)
 	{
 	case enSprite_BackGround:
+
+		break;
+	case enSprite_Number:
+
+		break;
+	case enSprite_Fire:
 
 		break;
 	default:
@@ -286,28 +340,24 @@ void StartEventScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mPro
 
 		break;
 	case 1:
-		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
 	case 2:
 
 		break;
 	case 3:
-		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
 	case 4:
 
 		break;
 	case 5:
-		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
 	case 6:
 
 		break;
 	case 7:
-		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
 	default:
@@ -321,28 +371,33 @@ void StartEventScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mPro
 //演出の段階ごとのカメラ操作.
 void StartEventScene::PhaseCameraControl(const int iPhase)
 {
+	float fYawRotSpeed = 0.02f;
+
 	switch (iPhase)
 	{
 	case 0:
-		m_pEventCamera->AddPos({ 0.0f, 0.0f, 0.0f });
+		m_pEventCamera->AddRot({ 0.0f, -fYawRotSpeed, 0.0f });
 
 		break;
 	case 1:
 
 		break;
 	case 2:
+		m_pEventCamera->AddRot({ 0.005f, fYawRotSpeed, 0.01f });
 
 		break;
 	case 3:
 
 		break;
 	case 4:
+		m_pEventCamera->AddRot({ 0.01f, -fYawRotSpeed, -0.005f });
 
 		break;
 	case 5:
 
 		break;
 	case 6:
+		m_pEventCamera->AddRot({ -0.01f, fYawRotSpeed, -0.01f });
 
 		break;
 	case 7:
@@ -356,10 +411,13 @@ void StartEventScene::PhaseCameraControl(const int iPhase)
 //演出の段階の進行.
 void StartEventScene::PhaseProgress(const int iPhase)
 {
+	float fCameraMoveTime = 1.0f;
+	float fCountTime = 1.5f;
+
 	switch (iPhase)
 	{
 	case 0:
-		if (m_pEventCamera->GetPos().z <= -1.5f)
+		if (m_iTime / FPS >= fCameraMoveTime)
 		{
 			if (FadeOut())
 			{
@@ -374,24 +432,110 @@ void StartEventScene::PhaseProgress(const int iPhase)
 
 		break;
 	case 1:
+		if (m_iTime / FPS >= fCountTime)
+		{
+			if (FadeOut())
+			{
+				m_iPhase++;
+				m_bWhenProgress = true;
+				m_vpSprite[enSprite_Number]->AddPatternHeight(1.0f);
+			}
+		}
+		else
+		{
+			FadeIn();
+		}
 
 		break;
 	case 2:
+		if (m_iTime / FPS >= fCameraMoveTime)
+		{
+			if (FadeOut())
+			{
+				m_iPhase++;
+				m_bWhenProgress = true;
+			}
+		}
+		else
+		{
+			FadeIn();
+		}
 
 		break;
 	case 3:
+		if (m_iTime / FPS >= fCountTime)
+		{
+			if (FadeOut())
+			{
+				m_iPhase++;
+				m_bWhenProgress = true;
+				m_vpSprite[enSprite_Number]->AddPatternHeight(1.0f);
+			}
+		}
+		else
+		{
+			FadeIn();
+		}
 
 		break;
 	case 4:
+		if (m_iTime / FPS >= fCameraMoveTime)
+		{
+			if (FadeOut())
+			{
+				m_iPhase++;
+				m_bWhenProgress = true;
+			}
+		}
+		else
+		{
+			FadeIn();
+		}
 
 		break;
 	case 5:
+		if (m_iTime / FPS >= fCountTime)
+		{
+			if (FadeOut())
+			{
+				m_iPhase++;
+				m_bWhenProgress = true;
+			}
+		}
+		else
+		{
+			FadeIn();
+		}
 
 		break;
 	case 6:
+		if (m_iTime / FPS >= fCameraMoveTime)
+		{
+			if (FadeOut())
+			{
+				m_iPhase++;
+				m_bWhenProgress = true;
+			}
+		}
+		else
+		{
+			FadeIn();
+		}
 
 		break;
 	case 7:
+		if (m_iTime / FPS >= fCountTime)
+		{
+			if (FadeOut())
+			{
+				m_iPhase++;
+				m_bWhenProgress = true;
+			}
+		}
+		else
+		{
+			FadeIn();
+		}
 
 		break;
 	default:
@@ -411,42 +555,50 @@ void StartEventScene::PhaseInit(const int iPhase)
 	D3DXVECTOR3 vLookAt;
 	CrearVECTOR3(vLookAt);
 
+	m_iTime = 0;
+
 	switch (iPhase)
 	{
 	case 0:
 		//カメラの注視位置を設定する.
-		vLookAt = m_pPlayerModel->GetPos();
-		vLookAt.y += 1.2f;
+		vLookAt.y += 5.0f;
 		m_pEventCamera->SetLookAt(vLookAt);
 
 		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y + 0.25f, vLookAt.z - 0.8f });
-
-		//カメラの上方方向を設定する
-		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
-
-		m_pPlayerModel->SetPos({ 0.0f, 0.0f, 0.0f });
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 1.0f});
 
 		break;
 	case 1:
+		//.
+		m_pPlayerModel->SetRot({ 0.0f, 0.0f, D3DXToRadian(-45) });
+		m_pPlayerModel->SetPos({ -4.0f, -4.0f, 0.0f });
 
 		break;
 	case 2:
 
 		break;
 	case 3:
+		//.
+		m_pPlayerModel->SetRot({ 0.0f, 0.0f, D3DXToRadian(180) });
+		m_pPlayerModel->SetPos({ 0.0f, 4.0f, 0.0f });
 
 		break;
 	case 4:
 
 		break;
 	case 5:
+		//.
+		m_pPlayerModel->SetRot({ 0.0f, 0.0f, D3DXToRadian(45) });
+		m_pPlayerModel->SetPos({ 4.0f, -4.0f, 0.0f });
 
 		break;
 	case 6:
 
 		break;
 	case 7:
+		//.
+		m_pPlayerModel->SetRot({ D3DXToRadian(60), D3DXToRadian(180), 0.0f });
+		m_pPlayerModel->SetPos({ 0.0f, 0.0f, -8.0f });
 
 		break;
 	default:
@@ -454,6 +606,51 @@ void StartEventScene::PhaseInit(const int iPhase)
 	}
 
 	m_bWhenProgress = false;
+}
+
+//.
+void StartEventScene::ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mProj, const int iPhase)
+{
+	//注視位置をクリア.
+	D3DXVECTOR3 vLookAt;
+	CrearVECTOR3(vLookAt);
+
+	//カメラの注視位置を設定する.
+	m_pModelSpriteCamera->SetLookAt(vLookAt);
+
+	//カメラの位置を設定する.
+	m_pModelSpriteCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 2.5f });
+
+	float fMoveSpeed = 0.08f;
+	switch (iPhase)
+	{
+	case 1:
+		m_pPlayerModel->AddPos({ fMoveSpeed, fMoveSpeed, 0.0f });
+
+		m_pPlayerModel->RenderModel(mView, mProj);
+
+		break;
+	case 3:
+		m_pPlayerModel->AddPos({ 0.0f, -fMoveSpeed, 0.0f });
+
+		m_pPlayerModel->RenderModel(mView, mProj);
+
+		break;
+	case 5:
+		m_pPlayerModel->AddPos({ -fMoveSpeed, fMoveSpeed, 0.0f });
+
+		m_pPlayerModel->RenderModel(mView, mProj);
+
+		break;
+	case 7:
+		m_pPlayerModel->AddPos({ 0.0f, 0.0f, fMoveSpeed * 2.0f });
+
+		m_pPlayerModel->RenderModel(mView, mProj);
+
+		break;
+	default:
+		break;
+	}
 }
 
 //フェードアウト.
@@ -540,36 +737,22 @@ void StartEventScene::RenderDebugText()
 	sprintf_s(cStrDbgTxt, "Scene : StartEvent");
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 0));
 
-	sprintf_s(cStrDbgTxt, "SpriteSize : ( %f, %f )", m_pOneFrameSprite->GetSize().x, m_pOneFrameSprite->GetSize().y);
+	sprintf_s(cStrDbgTxt, "Time : [%i]", m_iTime);
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 1));
 
-	sprintf_s(cStrDbgTxt, "SpriteScale : [%f]", m_pOneFrameSprite->GetScale());
+	sprintf_s(cStrDbgTxt, "SpriteSize : ( %f, %f )", m_pModelSprite->GetSize().x, m_pModelSprite->GetSize().y);
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 2));
 
-	sprintf_s(cStrDbgTxt, "Phase : [%i]", m_iPhase);
+	sprintf_s(cStrDbgTxt, "SpriteScale : [%f]", m_pModelSprite->GetScale());
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 3));
 
-	sprintf_s(cStrDbgTxt, "FadeAlpha : [%f]", m_pFadeSprite->GetAlpha());
+	sprintf_s(cStrDbgTxt, "Phase : [%i]", m_iPhase);
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 4));
-
-	sprintf_s(cStrDbgTxt, "CameraY : [%f]", m_pEventCamera->GetUpVector().y);
-	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 5));
-
-	sprintf_s(cStrDbgTxt, "CameraRoll : [%f]", m_pEventCamera->GetRoll());
-	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 6));
 }
 
 //デバッグ中のみの操作.
 void StartEventScene::DebugKeyControl()
 {
-	if (GetAsyncKeyState('1') & 0x1)
-	{
-		m_pEventCamera->AddRoll(-0.2f);
-	}
-	if (GetAsyncKeyState('2') & 0x1)
-	{
-		m_pEventCamera->AddRoll(0.2f);
-	}
 }
 
 #endif //#if _DEBUG.

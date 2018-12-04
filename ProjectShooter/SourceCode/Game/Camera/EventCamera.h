@@ -48,22 +48,17 @@ public:
 		return m_vLookAt;
 	}
 
-	void SetUpVector(const D3DXVECTOR3 vUpVec)
+	void SetRot(const D3DXVECTOR3 vRot)
 	{
-		m_vUpVector = vUpVec;
+		m_vRot = vRot;
 	}
-	D3DXVECTOR3 GetUpVector() const
+	void AddRot(const D3DXVECTOR3 vAdd)
 	{
-		return m_vUpVector;
+		m_vRot += vAdd;
 	}
-
-	void AddRoll(const float fAdd)
+	D3DXVECTOR3 GetRot() const
 	{
-		m_fRoll += fAdd;
-	}
-	float GetRoll() const
-	{
-		return m_fRoll;
+		return m_vRot;
 	}
 
 	//更新.
@@ -84,10 +79,8 @@ private:
 	D3DXVECTOR3 m_vPos;
 	//注視位置.
 	D3DXVECTOR3 m_vLookAt;
-	//上方方向.
-	D3DXVECTOR3 m_vUpVector;
 
-	float m_fRoll;
+	D3DXVECTOR3 m_vRot;
 
 	//ビュー変換.
 	void View();

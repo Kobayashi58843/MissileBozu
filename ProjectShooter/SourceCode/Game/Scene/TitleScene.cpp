@@ -49,7 +49,7 @@ void TitleScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	m_pPlayerModel->ChangeAnimation(1);
 
 	m_pEnemyModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Enemy), 0.08f, ANIMETION_SPEED);
-	m_pEnemyModel->ChangeAnimation(3);
+	m_pEnemyModel->ChangeAnimation(5);
 }
 
 //解放.
@@ -393,8 +393,7 @@ void TitleScene::RenderBackGroundBuffMain()
 	//カメラの位置を設定する.
 	m_pEventCamera->SetPos({ vLookAt.x - 1.5f, vLookAt.y + 0.5f, vLookAt.z - 1.0f });
 
-	//カメラの上方方向を設定する
-	m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+	m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
 
 	//カメラ更新.
 	m_pEventCamera->Update();
@@ -431,8 +430,7 @@ void TitleScene::RenderBackGroundBuffSub()
 	//カメラの位置を設定する.
 	m_pEventCamera->SetPos({ vLookAt.x + 1.5f, vLookAt.y - 0.8f, vLookAt.z - 1.5f });
 
-	//カメラの上方方向を設定する
-	m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+	m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
 
 	//カメラ更新.
 	m_pEventCamera->Update();

@@ -14,9 +14,26 @@ public:
 	{
 		m_vPos = vPos;
 	}
+	void AddPos(const D3DXVECTOR3 vAdd)
+	{
+		m_vPos += vAdd;
+	}
 	D3DXVECTOR3 GetPos() const
 	{
 		return m_vPos;
+	}
+
+	void SetRot(const D3DXVECTOR3 vRot)
+	{
+		m_vRot = vRot;
+	}
+	void AddRot(const D3DXVECTOR3 vAdd)
+	{
+		m_vRot += vAdd;
+	}
+	D3DXVECTOR3 GetRot() const
+	{
+		return m_vRot;
 	}
 
 	//3Dƒ‚ƒfƒ‹‚Ì•`‰æ.

@@ -14,6 +14,8 @@ private:
 	enum enSprite
 	{
 		enSprite_BackGround = 0,
+		enSprite_Number,
+		enSprite_Fire,
 
 		enSprite_Max
 	};
@@ -26,15 +28,20 @@ private:
 
 	void RenderSpriteProduct(const int iRenderLevel);
 
+	int m_iTime;
+
 	/*====/ カメラ関連 /====*/
 	EventCamera* m_pEventCamera;
+	EventCamera* m_pModelSpriteCamera;
 
 	/*====/ モデル関連 /====*/
 	EventModel* m_pPlayerModel;
 
+	clsDX9Mesh* m_pGround;
+
 	/*====/ スプライト関連 /====*/
-	DisplayBackBuffer*	m_pOneFrameSprite;
-	BackBuffer*			m_pOneFrameBuff;
+	DisplayBackBuffer*	m_pModelSprite;
+	BackBuffer*			m_pModelBuff;
 
 	//シーン切り替え時のフェード用画像.
 	TransitionsSprite*	m_pFadeSprite;
@@ -73,6 +80,9 @@ private:
 
 	//演出の各段階の初期化.
 	void PhaseInit(const int iPhase);
+
+	//.
+	void ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mProj, const int iPhase);
 
 	//フェードアウト.
 	bool FadeOut();
