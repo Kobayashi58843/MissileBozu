@@ -30,6 +30,8 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	CreateSprite();
 
 	m_pCamera = new Camera(WINDOW_WIDTH,WINDOW_HEIGHT);
+	m_pCamera->SetDisplaceHorizontally(0.5f);
+	m_pCamera->SetFocusingSpacePos({ 0.0f, 0.0f, -5.0f });
 
 	m_pBulletManager = new BulletManager;
 

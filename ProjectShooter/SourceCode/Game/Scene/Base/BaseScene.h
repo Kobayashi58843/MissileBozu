@@ -20,6 +20,7 @@
 #include "..\\..\\Sprite\\NumberSprite.h"
 #include "..\\..\\Sprite\\Sprite.h"
 #include "..\\..\\Sprite\\TransitionsSprite.h"
+#include "..\\..\\Sprite\\TitleBackgroundSprite.h"
 
 #include "..\\..\\BackBuffer.h"
 

@@ -135,7 +135,7 @@ void StartingScene::RenderModelProduct(const int iRenderLevel)
 		m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &pRTV, m_SceneNeedPointer.pBackBuffer_DSV);
 
 		//画面のクリア.
-		const float fClearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		const float fClearColor[4] = { 1.0f, 1.0f, 1.0f, 0.0f };
 		m_SceneNeedPointer.pContext->ClearRenderTargetView(m_pOneFrameBuff->GetRenderTargetView(), fClearColor);
 		m_SceneNeedPointer.pContext->ClearDepthStencilView(m_SceneNeedPointer.pBackBuffer_DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
@@ -160,6 +160,17 @@ void StartingScene::RenderSpriteProduct(const int iRenderLevel)
 	case 0:
 		//3Dモデルの描画側でGBuffer用のものを描画しているので.
 		//スプライトでも描画したいものがあるならここで描画する.
+		if (m_iPhase < 2)
+		{
+			m_vpSprite[enSprite_BackGround]->Render();
+		}
+		else if (m_iPhase < 4)
+		{
+			m_vpSprite[enSprite_BackGroundSub]->Render();
+		}
+
+		m_vpSprite[enSprite_PlayerText]->Render();
+		m_vpSprite[enSprite_EnemyText]->Render();
 
 		break;
 	case 1:
@@ -193,6 +204,18 @@ void StartingScene::CreateSprite()
 			SpriteData =
 			{ "Data\\Image\\BackGround.jpg"	//ファイルまでのパス.
 			, { 1.0f, 1.0f } };				//元画像を何分割するか.
+
+			break;
+		case enSprite_BackGroundSub:
+			SpriteData = { "Data\\Image\\BackGroundSub.jpg", { 1.0f, 1.0f } };
+
+			break;
+		case enSprite_PlayerText:
+			SpriteData ={ "Data\\Image\\PlayerText.png", { 1.0f, 1.0f } };
+
+			break;
+		case enSprite_EnemyText:
+			SpriteData = { "Data\\Image\\EnemyText.png", { 1.0f, 1.0f } };
 
 			break;
 		default:
@@ -251,6 +274,21 @@ void StartingScene::UpdateSpritePositio(int iSpriteNo)
 		vPosition.y = fWindowHeightCenter;
 
 		break;
+	case enSprite_BackGroundSub:
+		vPosition.x = fWindowWidthCenter;
+		vPosition.y = fWindowHeightCenter;
+
+		break;
+	case enSprite_PlayerText:
+		vPosition.x = fWindowWidthCenter + 150.0f;
+		vPosition.y = fWindowHeightCenter;
+
+		break;
+	case enSprite_EnemyText:
+		vPosition.x = fWindowWidthCenter + 150.0f;
+		vPosition.y = fWindowHeightCenter;
+
+		break;
 	default:
 		ERR_MSG("Clear::UpdateSpritePositio()", "error");
 
@@ -259,7 +297,7 @@ void StartingScene::UpdateSpritePositio(int iSpriteNo)
 
 	m_vpSprite[iSpriteNo]->SetPos(vPosition.x, vPosition.y);
 
-	m_pOneFrameSprite->SetPos(vPosition.x, vPosition.y);
+	m_pOneFrameSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
 }
 
 //スプライトのアニメーション.
@@ -268,6 +306,15 @@ void StartingScene::UpdateSpriteAnimation(int iSpriteNo)
 	switch (iSpriteNo)
 	{
 	case enSprite_BackGround:
+
+		break;
+	case enSprite_BackGroundSub:
+
+		break;
+	case enSprite_PlayerText:
+
+		break;
+	case enSprite_EnemyText:
 
 		break;
 	default:
@@ -289,17 +336,24 @@ void StartingScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj,
 	switch (iPhase)
 	{
 	case 0:
+		m_pPlayerModel->RenderModel(mView, mProj);
+
+		break;
 	case 1:
 		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
 	case 2:
+		m_pEnemyModel->RenderModel(mView, mProj);
+
+		break;
 	case 3:
 		m_pEnemyModel->RenderModel(mView, mProj);
 
 		break;
 	case 4:
 		m_pPlayerModel->RenderModel(mView, mProj);
+		m_pEnemyModel->RenderModel(mView, mProj);
 
 		break;
 	default:
@@ -333,7 +387,7 @@ void StartingScene::PhaseCameraControl(const int iPhase)
 
 		break;
 	case 4:
-		m_pEventCamera->AddLookAt({ 0.0f, 0.025f, 0.0f });
+		m_pEventCamera->AddLookAt({ 0.0f, 0.05f, 0.0f });
 
 		break;
 	default:
@@ -452,6 +506,12 @@ void StartingScene::PhaseInit(const int iPhase)
 		//カメラの上方方向を設定する
 		m_pEventCamera->SetUpVector({ -0.75f, 0.5f, 0.0f });
 
+		m_pPlayerModel->SetPos({ 0.0f, 0.0f, 0.0f });
+
+		//名前の表示フラグ.
+		m_vpSprite[enSprite_PlayerText]->SetDispFlg(false);
+		m_vpSprite[enSprite_EnemyText]->SetDispFlg(false);
+
 		break;
 	case 1:
 		//カメラの注視位置を設定する.
@@ -466,6 +526,12 @@ void StartingScene::PhaseInit(const int iPhase)
 		//カメラの上方方向を設定する
 		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
 
+		m_pPlayerModel->SetPos({ 0.0f, 0.0f, 0.0f });
+
+		//名前の表示フラグ.
+		m_vpSprite[enSprite_PlayerText]->SetDispFlg(true);
+		m_vpSprite[enSprite_EnemyText]->SetDispFlg(false);
+
 		break;
 	case 2:
 		//カメラの注視位置を設定する.
@@ -477,6 +543,12 @@ void StartingScene::PhaseInit(const int iPhase)
 
 		//カメラの上方方向を設定する
 		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
+
+		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 0.0f });
+
+		//名前の表示フラグ.
+		m_vpSprite[enSprite_PlayerText]->SetDispFlg(false);
+		m_vpSprite[enSprite_EnemyText]->SetDispFlg(false);
 
 		break;
 	case 3:
@@ -492,20 +564,36 @@ void StartingScene::PhaseInit(const int iPhase)
 		//カメラの上方方向を設定する
 		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
 
+		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 0.0f });
+
+		//名前の表示フラグ.
+		m_vpSprite[enSprite_PlayerText]->SetDispFlg(false);
+		m_vpSprite[enSprite_EnemyText]->SetDispFlg(true);
+
 		break;
 	case 4:
 		//カメラの注視位置を設定する.
 		CrearVECTOR3(vLookAt);
-		vLookAt.y -= 8.0f;
+		vLookAt.y -= 4.0f;
+		m_pEventCamera->SetLookAt(vLookAt);
 
 		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x, 0.0f, vLookAt.z - 5.0f });
+		m_pEventCamera->SetPos({ vLookAt.x, 1.5f, vLookAt.z - 4.0f });
 
 		//カメラの上方方向を設定する
 		m_pEventCamera->SetUpVector({ 0.0f, 1.0f, 0.0f });
 
 		//モデルの位置を設定.
-		m_pPlayerModel->SetPos({ 0.0f, 0.0f, 0.0f });
+		{
+			//モデル同士の距離.
+			float fGap = 1.0f;
+			m_pPlayerModel->SetPos({ fGap, 0.0f, 0.0f });
+			m_pEnemyModel->SetPos({ -fGap, 0.0f, 0.0f });
+		}
+
+		//名前の表示フラグ.
+		m_vpSprite[enSprite_PlayerText]->SetDispFlg(false);
+		m_vpSprite[enSprite_EnemyText]->SetDispFlg(false);
 
 		break;
 	default:
@@ -515,7 +603,7 @@ void StartingScene::PhaseInit(const int iPhase)
 	m_bWhenProgress = false;
 }
 
-//フェード.
+//フェードアウト.
 bool StartingScene::FadeOut()
 {
 	//フェード用の画像が表示可能かどうかでフェード中を判断する.
@@ -536,7 +624,7 @@ bool StartingScene::FadeOut()
 		}
 		else
 		{
-			//End_FadeOut.
+			//フェードアウト完了.
 			return true;
 		}
 	}
@@ -544,6 +632,7 @@ bool StartingScene::FadeOut()
 	return false;
 }
 
+//フェードイン.
 bool StartingScene::FadeIn()
 {
 	if (m_pFadeSprite->IsDispFlg())
@@ -560,7 +649,7 @@ bool StartingScene::FadeIn()
 			m_pFadeSprite->SetDispFlg(false);
 			m_pFadeSprite->SetAlpha(0.0f);
 
-			//End_FadeIn.
+			//フェードイン完了.
 			return true;
 		}
 	}
@@ -568,6 +657,7 @@ bool StartingScene::FadeIn()
 	return false;
 }
 
+//フェード用のマスクの描画
 void StartingScene::RenderFadeMaskBuffer()
 {
 	//レンダーターゲットをフェード用画像に使うマスク用バッファに変える.

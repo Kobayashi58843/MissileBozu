@@ -1,7 +1,8 @@
 //グローバル変数.
 //テクスチャはレジスター t(n)
-Texture2D	g_Texture	:	register(t0);
-Texture2D	g_DispTex	:	register(t1);
+Texture2D	g_Division		:	register(t0);
+Texture2D	g_DispTexMain	:	register(t1);
+Texture2D	g_DispTexSub	:	register(t2);
 
 //サンプラーはレジスター s(n)
 SamplerState g_Sampler	:	register(s0);
@@ -49,7 +50,24 @@ VS_OUT VS(float4 Pos	:	POSITION,
 //ピクセルシェーダ.
 float4 PS(VS_OUT input) : SV_Target
 {
-	float4 OutColor = g_DispTex.Sample(g_Sampler, input.UV);
+	float4 OutColor = g_DispTexMain.Sample(g_Sampler, input.UV);
+
+	float fDivision = g_Division.Sample(g_Sampler, input.UV);
+	
+	float4 SubColor = g_DispTexSub.Sample(g_Sampler, input.UV);
+	
+	//黒色部分は2枚目のものを使う.
+	if( fDivision == 0 )
+	{
+		OutColor = SubColor;
+	}
+	else if( fDivision < 1 )
+	{
+		//グラデーションになっている場合は2枚を合成する.
+		float4 fMainColor = OutColor * fDivision;
+		float4 fSubColor = SubColor * (1 - fDivision);
+		OutColor = fMainColor + fSubColor;
+	}
 
 	return OutColor;
 }

@@ -7,7 +7,7 @@
 #include "..\\Singleton.h"
 
 //ゲーム開始時のシーン.
-const enSwitchToNextScene START_SCENE = enSwitchToNextScene::Starting;
+const enSwitchToNextScene START_SCENE = enSwitchToNextScene::StartEvent;
 
 //フェードの速度.
 const float FADE_SPEED = 0.02f;
@@ -213,6 +213,9 @@ void Game::Render()
 
 	for (unsigned int i = 0; i <= MAX_RENDER_LEVEL; i++)
 	{
+		//レンダーターゲットを元に戻す.
+		ID3D11RenderTargetView* pRTV = m_pDirect3D->GetRenderTargetView();
+		m_pDeviceContext->OMSetRenderTargets(1, &pRTV, m_pDirect3D->GetDepthStencilView());
 		m_pDeviceContext->ClearDepthStencilView(m_pDirect3D->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 		//深度テストを有効.

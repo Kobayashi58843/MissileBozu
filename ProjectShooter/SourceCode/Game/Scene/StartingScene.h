@@ -14,6 +14,9 @@ private:
 	enum enSprite
 	{
 		enSprite_BackGround = 0,
+		enSprite_BackGroundSub,
+		enSprite_PlayerText,
+		enSprite_EnemyText,
 
 		enSprite_Max
 	};
@@ -75,10 +78,11 @@ private:
 	//演出の各段階の初期化.
 	void PhaseInit(const int iPhase);
 
-	//フェード.
+	//フェードアウト.
 	bool FadeOut();
+	//フェードイン.
 	bool FadeIn();
-
+	//フェード用のマスクの描画.
 	void RenderFadeMaskBuffer();
 
 #if _DEBUG

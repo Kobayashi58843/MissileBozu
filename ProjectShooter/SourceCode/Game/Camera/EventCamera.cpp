@@ -13,6 +13,7 @@ EventCamera::EventCamera(const float fWindowWidth, const float fWindowHeight)
 	: m_fWindowWidth(fWindowWidth)
 	, m_fWindowHeight(fWindowHeight)
 	, m_vUpVector(UP_VECTOR)
+	, m_fRoll(1.0f)
 {
 	CrearVECTOR3(m_vPos);
 	CrearVECTOR3(m_vLookAt);
@@ -35,6 +36,8 @@ void EventCamera::Update()
 //ÉrÉÖÅ[ïœä∑.
 void EventCamera::View()
 {
+	m_vUpVector.y = sinf(m_fRoll);
+
 	D3DXMatrixLookAtLH(&m_mView, &m_vPos, &m_vLookAt, &m_vUpVector);
 }
 

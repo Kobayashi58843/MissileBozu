@@ -52,6 +52,19 @@ public:
 	{
 		m_vUpVector = vUpVec;
 	}
+	D3DXVECTOR3 GetUpVector() const
+	{
+		return m_vUpVector;
+	}
+
+	void AddRoll(const float fAdd)
+	{
+		m_fRoll += fAdd;
+	}
+	float GetRoll() const
+	{
+		return m_fRoll;
+	}
 
 	//更新.
 	void Update();
@@ -73,6 +86,8 @@ private:
 	D3DXVECTOR3 m_vLookAt;
 	//上方方向.
 	D3DXVECTOR3 m_vUpVector;
+
+	float m_fRoll;
 
 	//ビュー変換.
 	void View();
