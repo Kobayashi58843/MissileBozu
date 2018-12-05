@@ -36,11 +36,11 @@ StartEventScene::StartEventScene(SCENE_NEED_POINTER PointerGroup)
 
 	D3DXVECTOR2 vDivisionQuantity = { 1.0f, 1.0f };
 	m_pFadeSprite = new TransitionsSprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	m_pFadeSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\White.jpg");
+	m_pFadeSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Fade.jpg");
 	m_pFadeSprite->SetMaskTexture(m_pFadeMaskBuffer->GetShaderResourceView());
 
 	m_pFadeMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	m_pFadeMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Transitions1.png");
+	m_pFadeMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Transitions4.png");
 
 	//位置をウインドウの中心に設定.
 	float fWindowWidthCenter = WINDOW_WIDTH / 2.0f;
@@ -64,7 +64,7 @@ StartEventScene::StartEventScene(SCENE_NEED_POINTER PointerGroup)
 
 	vDivisionQuantity = { 1.0f, 1.0f };
 	m_pCountDownMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	m_pCountDownMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Transitions3.png");
+	m_pCountDownMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Transitions2.png");
 	m_pCountDownMaskSprite->SetScale(1.0f);
 
 	//位置をウインドウの中心に設定.
@@ -229,7 +229,10 @@ void StartEventScene::RenderSpriteProduct(const int iRenderLevel)
 		//フェード用のマスクの描画.
 		RenderFadeMaskBuffer();
 		//フェード用画像の描画.
-		m_pFadeSprite->Render();
+		if (m_iPhase == 3)
+		{
+			m_pFadeSprite->Render();
+		}
 
 		break;
 	default:
@@ -460,7 +463,7 @@ void StartEventScene::PhaseProgress(const int iPhase)
 		}
 		else
 		{
-			m_pFadeSprite->FadeIn(FADE_SPEED);
+			m_pFadeSprite->SetAlpha(0.0f);
 		}
 
 		break;

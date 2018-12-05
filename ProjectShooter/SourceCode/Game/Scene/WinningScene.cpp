@@ -41,7 +41,7 @@ void WinningScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	if (Singleton<RawInput>().GetInstance().IsLButtonDown())
 	{
 		//カーソルがボタンの上にあるか.
-		if (IsHittingOfSprite(enSprite_Cursor, enSprite_ReturnButton))
+		if (IsHittingOfSprite(enSprite_Cursor, enSprite_Button))
 		{
 			enNextScene = enSwitchToNextScene::Clear;
 		}
@@ -98,15 +98,15 @@ void WinningScene::CreateSprite()
 
 			break;
 		case enSprite_Logo:
-			SpriteData = { "Data\\Image\\LogoText.png", { 1.0f, 3.0f } };
+			SpriteData = { "Data\\Image\\Win.png", { 1.0f, 1.0f } };
 
 			break;
-		case enSprite_ReturnButton:
+		case enSprite_Button:
 			SpriteData = { "Data\\Image\\Push.jpg", { 1.0f, 2.0f } };
 
 			break;
-		case enSprite_ReturnButtonText:
-			SpriteData = { "Data\\Image\\ButtonText.png", { 1.0f, 3.0f } };
+		case enSprite_ButtonText:
+			SpriteData = { "Data\\Image\\Next.png", { 1.0f, 1.0f } };
 
 			break;
 		case enSprite_Cursor:
@@ -170,12 +170,12 @@ void WinningScene::UpdateSpritePositio(int iSpriteNo)
 		vPosition.y = fWindowHeightCenter / 2.0f;
 
 		break;
-	case enSprite_ReturnButton:
+	case enSprite_Button:
 		vPosition.x = fWindowWidthCenter;
 		vPosition.y = fWindowHeightCenter + (fWindowHeightCenter / 2.0f);
 
 		break;
-	case enSprite_ReturnButtonText:
+	case enSprite_ButtonText:
 		vPosition.x = fWindowWidthCenter;
 		vPosition.y = fWindowHeightCenter + (fWindowHeightCenter / 2.0f);
 
@@ -216,10 +216,9 @@ void WinningScene::UpdateSpriteAnimation(int iSpriteNo)
 
 		break;
 	case enSprite_Logo:
-		m_vpSprite[iSpriteNo]->SetPatternHeight(1.0f);
 
 		break;
-	case enSprite_ReturnButton:
+	case enSprite_Button:
 		//カーソルとボタンが接触していた時.
 		if (IsHittingOfSprite(enSprite_Cursor, iSpriteNo))
 		{
@@ -231,12 +230,11 @@ void WinningScene::UpdateSpriteAnimation(int iSpriteNo)
 		}
 
 		break;
-	case enSprite_ReturnButtonText:
-		m_vpSprite[iSpriteNo]->SetPatternHeight(2.0f);
+	case enSprite_ButtonText:
 
 		break;
 	case enSprite_Cursor:
-		if (IsHittingOfSprite(enSprite_Cursor, enSprite_ReturnButton))
+		if (IsHittingOfSprite(enSprite_Cursor, enSprite_Button))
 		{
 			m_iCursorAnimationCount++;
 			float fCursorAnimationWaitTime = 0.2f;

@@ -15,8 +15,8 @@ private:
 	{
 		enSprite_BackGround = 0,
 		enSprite_Logo,
-		enSprite_ReturnButton,
-		enSprite_ReturnButtonText,
+		enSprite_Button,
+		enSprite_ButtonText,
 		enSprite_Cursor,
 
 		enSprite_Max

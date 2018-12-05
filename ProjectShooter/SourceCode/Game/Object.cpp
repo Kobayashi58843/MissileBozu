@@ -71,14 +71,43 @@ bool Object::Intersect(const D3DXVECTOR3 vAxis,
 	vecEnd += vecAxis * 1.0f;
 
 	//‘ÎÛ‚ª“®‚¢‚Ä‚é•¨‘Ì‚Å‚àA‘ÎÛ‚Ìworlds—ñ‚ÌA‹t•À—ñ‚ğ—p‚¢‚ê‚Î³‚µ‚­ƒŒƒC‚ª“–‚½‚é.
-	D3DXMATRIX matWorld;
+	
+	//Šgk.
+	D3DXMATRIX	mScale;
+	D3DXMatrixIdentity(&mScale);
+	
+	float fScale = pTarget->GetScale();
+	D3DXMatrixScaling(&mScale, fScale, fScale, fScale);
+	
+	//‰ñ“].
+	D3DXMATRIX	mYaw, mPitch, mRoll;
+	D3DXMatrixIdentity(&mYaw);
+	D3DXMatrixIdentity(&mPitch);
+	D3DXMatrixIdentity(&mRoll);
+
+	D3DXVECTOR3 vRot = pTarget->GetRot();
+	D3DXMatrixRotationY(&mYaw, vRot.y);	//Y²‰ñ“].
+	D3DXMatrixRotationX(&mPitch, vRot.x);	//X²‰ñ“].
+	D3DXMatrixRotationZ(&mRoll, vRot.z);	//Z²‰ñ“].
+
+	//ˆÚ“®.
+	D3DXMATRIX mTrans;
+	D3DXMatrixIdentity(&mTrans);
+
 	D3DXVECTOR3 vPos = pTarget->GetPos();
-	D3DXMatrixTranslation(&matWorld, vPos.x, vPos.y, vPos.z);
+	D3DXMatrixTranslation(&mTrans, vPos.x, vPos.y, vPos.z);
+
+	//‡¬(Šgk~‰ñ“]~ˆÚ“®)
+	D3DXMATRIX mWorld;
+	D3DXMatrixIdentity(&mWorld);
+
+	mWorld = mScale * mYaw * mPitch * mRoll * mTrans;
 
 	//‹t•À—ñ‚ğ‹‚ß‚é.
-	D3DXMatrixInverse(&matWorld, NULL, &matWorld);
-	D3DXVec3TransformCoord(&vecStart, &vecStart, &matWorld);
-	D3DXVec3TransformCoord(&vecEnd, &vecEnd, &matWorld);
+	D3DXMatrixInverse(&mWorld, NULL, &mWorld);
+
+	D3DXVec3TransformCoord(&vecStart, &vecStart, &mWorld);
+	D3DXVec3TransformCoord(&vecEnd, &vecEnd, &mWorld);
 
 	//‹——£‚ğ‹‚ß‚é.
 	vecDistance = vecEnd - vecStart;

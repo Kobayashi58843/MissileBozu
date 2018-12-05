@@ -41,13 +41,13 @@ void ContinueScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	if (Singleton<RawInput>().GetInstance().IsLButtonDown())
 	{
 		//カーソルがボタンの上にあるか.
-		if (IsHittingOfSprite(enSprite_Cursor, enSprite_ReturnButton))
+		if (IsHittingOfSprite(enSprite_Cursor, enSprite_Yes))
+		{
+			enNextScene = enSwitchToNextScene::Action;
+		}
+		else if(IsHittingOfSprite(enSprite_Cursor, enSprite_No))
 		{
 			enNextScene = enSwitchToNextScene::Over;
-		}
-		else
-		{
-			//enNextScene = enSwitchToNextScene::Action;
 		}
 	}
 }
@@ -102,15 +102,23 @@ void ContinueScene::CreateSprite()
 
 			break;
 		case enSprite_Logo:
-			SpriteData = { "Data\\Image\\LogoText.png", { 1.0f, 3.0f } };
+			SpriteData = { "Data\\Image\\Continue.png", { 1.0f, 1.0f } };
 
 			break;
-		case enSprite_ReturnButton:
+		case enSprite_Yes:
 			SpriteData = { "Data\\Image\\Push.jpg", { 1.0f, 2.0f } };
 
 			break;
-		case enSprite_ReturnButtonText:
-			SpriteData = { "Data\\Image\\ButtonText.png", { 1.0f, 3.0f } };
+		case enSprite_No:
+			SpriteData = { "Data\\Image\\End.jpg", { 1.0f, 2.0f } };
+
+			break;
+		case enSprite_YesText:
+			SpriteData = { "Data\\Image\\Yes.png", { 1.0f, 1.0f } };
+
+			break;
+		case enSprite_NoText:
+			SpriteData = { "Data\\Image\\No.png", { 1.0f, 1.0f } };
 
 			break;
 		case enSprite_Cursor:
@@ -174,13 +182,23 @@ void ContinueScene::UpdateSpritePositio(int iSpriteNo)
 		vPosition.y = fWindowHeightCenter / 2.0f;
 
 		break;
-	case enSprite_ReturnButton:
-		vPosition.x = fWindowWidthCenter;
+	case enSprite_Yes:
+		vPosition.x = fWindowWidthCenter - (fWindowWidthCenter / 2.0f);
 		vPosition.y = fWindowHeightCenter + (fWindowHeightCenter / 2.0f);
 
 		break;
-	case enSprite_ReturnButtonText:
-		vPosition.x = fWindowWidthCenter;
+	case enSprite_No:
+		vPosition.x = fWindowWidthCenter + (fWindowWidthCenter / 2.0f);
+		vPosition.y = fWindowHeightCenter + (fWindowHeightCenter / 2.0f);
+
+		break;
+	case enSprite_YesText:
+		vPosition.x = fWindowWidthCenter - (fWindowWidthCenter / 2.0f);
+		vPosition.y = fWindowHeightCenter + (fWindowHeightCenter / 2.0f);
+
+		break;
+	case enSprite_NoText:
+		vPosition.x = fWindowWidthCenter + (fWindowWidthCenter / 2.0f);
 		vPosition.y = fWindowHeightCenter + (fWindowHeightCenter / 2.0f);
 
 		break;
@@ -220,10 +238,9 @@ void ContinueScene::UpdateSpriteAnimation(int iSpriteNo)
 
 		break;
 	case enSprite_Logo:
-		m_vpSprite[iSpriteNo]->SetPatternHeight(1.0f);
 
 		break;
-	case enSprite_ReturnButton:
+	case enSprite_Yes:
 		//カーソルとボタンが接触していた時.
 		if (IsHittingOfSprite(enSprite_Cursor, iSpriteNo))
 		{
@@ -235,12 +252,27 @@ void ContinueScene::UpdateSpriteAnimation(int iSpriteNo)
 		}
 
 		break;
-	case enSprite_ReturnButtonText:
-		m_vpSprite[iSpriteNo]->SetPatternHeight(2.0f);
+	case enSprite_No:
+		//カーソルとボタンが接触していた時.
+		if (IsHittingOfSprite(enSprite_Cursor, iSpriteNo))
+		{
+			m_vpSprite[iSpriteNo]->SetPatternHeight(1.0f);
+		}
+		else
+		{
+			m_vpSprite[iSpriteNo]->SetPatternHeight(0.0f);
+		}
+
+		break;
+	case enSprite_YesText:
+
+		break;
+	case enSprite_NoText:
 
 		break;
 	case enSprite_Cursor:
-		if (IsHittingOfSprite(enSprite_Cursor, enSprite_ReturnButton))
+		if (IsHittingOfSprite(enSprite_Cursor, enSprite_Yes) ||
+			IsHittingOfSprite(enSprite_Cursor, enSprite_No))
 		{
 			m_iCursorAnimationCount++;
 			float fCursorAnimationWaitTime = 0.2f;

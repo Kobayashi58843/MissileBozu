@@ -40,6 +40,8 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	m_pEnemy = new Enemy(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Enemy));
 
 	m_pGround = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_Ground);
+	m_pGround->SetScale(32.0f);
+	m_pGround->SetPos({ 0.0f, -1.5f, 0.0f });
 }
 
 //‰ð•ú.

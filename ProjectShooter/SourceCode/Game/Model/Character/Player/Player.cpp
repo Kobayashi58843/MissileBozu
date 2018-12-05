@@ -20,7 +20,7 @@ const float MOVE_SPEED = 0.08f;
 const float RADIUS = 0.6f;
 
 //初期位置.
-const D3DXVECTOR3 POSITION = { 0.0f, 0.0f, 0.0f };
+const D3DXVECTOR3 POSITION = { 0.0f, 0.0f, -20.0f };
 
 //移動可能範囲.
 const float MOVE_LIMIT = 30.0f;
@@ -291,15 +291,38 @@ void Player::AcceptedMoveButton()
 //移動制限.
 void Player::MoveLimit()
 {
-	const float fDistance = D3DXVec3Length(&m_vPos);
+	//const float fDistance = D3DXVec3Length(&m_vPos);
 
-	if (fabs(fDistance) < MOVE_LIMIT)
+	//if (fabs(fDistance) < MOVE_LIMIT)
+	//{
+	//	m_vOldPos = m_vPos;
+	//}
+	//else
+	//{
+	//	m_vPos = m_vOldPos;
+	//	if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PlayerMoveLimit))
+	//	{
+	//		//SEを再生.
+	//		Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_PlayerMoveLimit);
+
+	//		//エフェクトを再生.
+	//		m_WallHitHandle = m_pEffect->Play(m_vPos, clsEffects::enEfcType_PlayerWallHit);
+
+	//		const float fEffectScale = 0.5f;
+	//		m_pEffect->SetScale(m_WallHitHandle, { fEffectScale, fEffectScale, fEffectScale });
+
+	//		const float fYaw = m_vRot.y - static_cast<float>D3DXToRadian(90);
+	//		m_pEffect->SetRotation(m_WallHitHandle, { 0.0f, fYaw, 0.0f });
+	//	}
+	//}
+
+	if (fabs(m_vPos.x) < MOVE_LIMIT)
 	{
-		m_vOldPos = m_vPos;
+		m_vOldPos.x = m_vPos.x;
 	}
 	else
 	{
-		m_vPos = m_vOldPos;
+		m_vPos.x = m_vOldPos.x;
 
 		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PlayerMoveLimit))
 		{
@@ -309,10 +332,34 @@ void Player::MoveLimit()
 			//エフェクトを再生.
 			m_WallHitHandle = m_pEffect->Play(m_vPos, clsEffects::enEfcType_PlayerWallHit);
 
-			const float fEffectScale = 0.5f;
+			float fEffectScale = 0.5f;
 			m_pEffect->SetScale(m_WallHitHandle, { fEffectScale, fEffectScale, fEffectScale });
 
-			const float fYaw = m_vRot.y - static_cast<float>D3DXToRadian(90);
+			float fYaw = static_cast<float>D3DXToRadian(0);
+			m_pEffect->SetRotation(m_WallHitHandle, { 0.0f, fYaw, 0.0f });
+		}
+	}
+
+	if (fabs(m_vPos.z) < MOVE_LIMIT)
+	{
+		m_vOldPos.z = m_vPos.z;
+	}
+	else
+	{
+		m_vPos.z = m_vOldPos.z;
+
+		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PlayerMoveLimit))
+		{
+			//SEを再生.
+			Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_PlayerMoveLimit);
+
+			//エフェクトを再生.
+			m_WallHitHandle = m_pEffect->Play(m_vPos, clsEffects::enEfcType_PlayerWallHit);
+
+			float fEffectScale = 0.5f;
+			m_pEffect->SetScale(m_WallHitHandle, { fEffectScale, fEffectScale, fEffectScale });
+
+			float fYaw = static_cast<float>D3DXToRadian(90);
 			m_pEffect->SetRotation(m_WallHitHandle, { 0.0f, fYaw, 0.0f });
 		}
 	}
