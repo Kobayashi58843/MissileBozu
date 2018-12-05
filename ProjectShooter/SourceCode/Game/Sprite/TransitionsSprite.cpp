@@ -227,3 +227,50 @@ void TransitionsSprite::InputConstantBuffer(const D3DMATRIX mWorld)
 	//マスク処理に使うテクスチャをシェーダに渡す.
 	m_pDeviceContext11->PSSetShaderResources(1, 1, &m_pMaskTexture_SRV);
 }
+
+//フェードアウト.
+bool TransitionsSprite::FadeOut(const float fFadeSpeed)
+{
+	//フェード用の画像が表示可能かどうかでフェード中を判断する.
+	//フェード中でない場合.
+	if (!m_bDispFlg)
+	{
+		//フェード用の画像を表示可能にする.
+		m_bDispFlg = true;
+	}
+
+	if (1.0f > m_fAlpha)
+	{
+		m_fAlpha += fFadeSpeed;
+	}
+	else
+	{
+		//フェードアウト完了.
+		return true;
+	}
+
+	return false;
+}
+
+//フェードイン.
+bool TransitionsSprite::FadeIn(const float fFadeSpeed)
+{
+	if (IsDispFlg())
+	{
+		if (0.0f < m_fAlpha)
+		{
+			m_fAlpha -= fFadeSpeed;
+		}
+		else
+		{
+			//フェード用の画像を非表示にする.
+			m_bDispFlg = false;
+			m_fAlpha = 0.0f;
+
+			//フェードイン完了.
+			return true;
+		}
+	}
+
+	return false;
+}

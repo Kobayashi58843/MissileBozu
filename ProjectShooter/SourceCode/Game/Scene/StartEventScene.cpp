@@ -6,10 +6,13 @@
 const double ANIMETION_SPEED = 0.01;
 
 //演出の段階の最大数.
-const int MAX_PHASE = 8;
+const int MAX_PHASE = 4;
 
 //フェードの速度.
-const float FADE_SPEED = 0.1f;
+const float FADE_SPEED = 0.04f;
+
+//一フェーズの時間.
+const float COUNT_TIME = 2.5f;
 
 StartEventScene::StartEventScene(SCENE_NEED_POINTER PointerGroup)
 	: BaseScene(PointerGroup)
@@ -37,7 +40,7 @@ StartEventScene::StartEventScene(SCENE_NEED_POINTER PointerGroup)
 	m_pFadeSprite->SetMaskTexture(m_pFadeMaskBuffer->GetShaderResourceView());
 
 	m_pFadeMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	m_pFadeMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Transitions_Starting.png");
+	m_pFadeMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Transitions1.png");
 
 	//位置をウインドウの中心に設定.
 	float fWindowWidthCenter = WINDOW_WIDTH / 2.0f;
@@ -50,10 +53,39 @@ StartEventScene::StartEventScene(SCENE_NEED_POINTER PointerGroup)
 
 	//透過値を0にする.
 	m_pFadeSprite->SetAlpha(0.0f);
+
+	/*====/ カウントダウン用スプライト関連 /====*/
+	m_pCountDownMaskBuffer = new BackBuffer(m_SceneNeedPointer.pDevice, static_cast<UINT>(WINDOW_WIDTH), static_cast<UINT>(WINDOW_HEIGHT));
+
+	vDivisionQuantity = { 1.0f, 4.0f };
+	m_pCountDownSprite = new TransitionsSprite(vDivisionQuantity.x, vDivisionQuantity.y);
+	m_pCountDownSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\CountDown.png");
+	m_pCountDownSprite->SetMaskTexture(m_pCountDownMaskBuffer->GetShaderResourceView());
+
+	vDivisionQuantity = { 1.0f, 1.0f };
+	m_pCountDownMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
+	m_pCountDownMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Transitions3.png");
+	m_pCountDownMaskSprite->SetScale(1.0f);
+
+	//位置をウインドウの中心に設定.
+	m_pCountDownSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
+	m_pCountDownMaskSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
+
+	//はじめは非表示に設定しておく.
+	m_pCountDownSprite->SetDispFlg(false);
+
+	//透過値を0にする.
+	m_pCountDownSprite->SetAlpha(0.0f);
 }
 
 StartEventScene::~StartEventScene()
 {
+	SAFE_DELETE(m_pCountDownSprite);
+
+	SAFE_DELETE(m_pCountDownMaskSprite);
+
+	SAFE_DELETE(m_pCountDownMaskBuffer);
+
 	SAFE_DELETE(m_pFadeSprite);
 
 	SAFE_DELETE(m_pFadeMaskSprite);
@@ -177,20 +209,25 @@ void StartEventScene::RenderSpriteProduct(const int iRenderLevel)
 
 		break;
 	case 1:
-		if (m_iPhase == 1 || m_iPhase == 3 || m_iPhase == 5)
+		if (m_iTime / FPS <= COUNT_TIME - (COUNT_TIME / 3.0f) &&
+			m_iTime / FPS >= COUNT_TIME / 3.0f)
 		{
-			m_vpSprite[enSprite_Number]->Render();
+			m_pCountDownSprite->FadeOut(FADE_SPEED);
+		}
+		else
+		{
+			m_pCountDownSprite->FadeIn(FADE_SPEED / 2.0f);
 		}
 
-		if (m_iPhase == 7)
-		{
-			m_vpSprite[enSprite_Fire]->Render();
-		}
+		RenderCountDownMaskBuffer();
+		m_pCountDownSprite->Render();
 
 		break;
 	case MAX_RENDER_LEVEL:
 		m_pModelSprite->Render();
 		
+		//フェード用のマスクの描画.
+		RenderFadeMaskBuffer();
 		//フェード用画像の描画.
 		m_pFadeSprite->Render();
 
@@ -217,14 +254,6 @@ void StartEventScene::CreateSprite()
 			SpriteData =
 			{ "Data\\Image\\BackGround.jpg"	//ファイルまでのパス.
 			, { 1.0f, 1.0f } };				//元画像を何分割するか.
-
-			break;
-		case enSprite_Number:
-			SpriteData = { "Data\\Image\\Number.png", { 1.0f, 3.0f } };
-
-			break;
-		case enSprite_Fire:
-			SpriteData = { "Data\\Image\\Fire.png", { 1.0f, 1.0f } };
 
 			break;
 		default:
@@ -283,16 +312,6 @@ void StartEventScene::UpdateSpritePositio(int iSpriteNo)
 		vPosition.y = fWindowHeightCenter;
 
 		break;
-	case enSprite_Number:
-		vPosition.x = fWindowWidthCenter;
-		vPosition.y = fWindowHeightCenter;
-
-		break;
-	case enSprite_Fire:
-		vPosition.x = fWindowWidthCenter;
-		vPosition.y = fWindowHeightCenter;
-
-		break;
 	default:
 		ERR_MSG("Clear::UpdateSpritePositio()", "error");
 
@@ -310,12 +329,6 @@ void StartEventScene::UpdateSpriteAnimation(int iSpriteNo)
 	switch (iSpriteNo)
 	{
 	case enSprite_BackGround:
-
-		break;
-	case enSprite_Number:
-
-		break;
-	case enSprite_Fire:
 
 		break;
 	default:
@@ -348,18 +361,6 @@ void StartEventScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mPro
 	case 3:
 
 		break;
-	case 4:
-
-		break;
-	case 5:
-
-		break;
-	case 6:
-
-		break;
-	case 7:
-
-		break;
 	default:
 		break;
 	}
@@ -376,31 +377,15 @@ void StartEventScene::PhaseCameraControl(const int iPhase)
 	switch (iPhase)
 	{
 	case 0:
-		m_pEventCamera->AddRot({ 0.0f, -fYawRotSpeed, 0.0f });
 
 		break;
 	case 1:
 
 		break;
 	case 2:
-		m_pEventCamera->AddRot({ 0.005f, fYawRotSpeed, 0.01f });
 
 		break;
 	case 3:
-
-		break;
-	case 4:
-		m_pEventCamera->AddRot({ 0.01f, -fYawRotSpeed, -0.005f });
-
-		break;
-	case 5:
-
-		break;
-	case 6:
-		m_pEventCamera->AddRot({ -0.01f, fYawRotSpeed, -0.01f });
-
-		break;
-	case 7:
 
 		break;
 	default:
@@ -411,77 +396,63 @@ void StartEventScene::PhaseCameraControl(const int iPhase)
 //演出の段階の進行.
 void StartEventScene::PhaseProgress(const int iPhase)
 {
-	float fCameraMoveTime = 1.0f;
-	float fCountTime = 1.5f;
-
 	switch (iPhase)
 	{
 	case 0:
-		if (m_iTime / FPS >= fCameraMoveTime)
+		if (m_iTime / FPS >= COUNT_TIME)
 		{
-			if (FadeOut())
+			if (m_pFadeSprite->FadeOut(FADE_SPEED))
 			{
 				m_iPhase++;
 				m_bWhenProgress = true;
+
+				m_pCountDownSprite->AddPatternHeight(1.0f);
 			}
 		}
 		else
 		{
-			FadeIn();
+			m_pFadeSprite->FadeIn(FADE_SPEED);
 		}
 
 		break;
 	case 1:
-		if (m_iTime / FPS >= fCountTime)
+		if (m_iTime / FPS >= COUNT_TIME)
 		{
-			if (FadeOut())
+			if (m_pFadeSprite->FadeOut(FADE_SPEED))
 			{
 				m_iPhase++;
 				m_bWhenProgress = true;
-				m_vpSprite[enSprite_Number]->AddPatternHeight(1.0f);
+				
+				m_pCountDownSprite->AddPatternHeight(1.0f);
 			}
 		}
 		else
 		{
-			FadeIn();
+			m_pFadeSprite->FadeIn(FADE_SPEED);
 		}
 
 		break;
 	case 2:
-		if (m_iTime / FPS >= fCameraMoveTime)
+		if (m_iTime / FPS >= COUNT_TIME)
 		{
-			if (FadeOut())
+			if (m_pFadeSprite->FadeOut(FADE_SPEED))
 			{
 				m_iPhase++;
 				m_bWhenProgress = true;
+
+				m_pCountDownSprite->AddPatternHeight(1.0f);
 			}
 		}
 		else
 		{
-			FadeIn();
+			m_pFadeSprite->FadeIn(FADE_SPEED);
 		}
 
 		break;
 	case 3:
-		if (m_iTime / FPS >= fCountTime)
+		if (m_iTime / FPS >= COUNT_TIME)
 		{
-			if (FadeOut())
-			{
-				m_iPhase++;
-				m_bWhenProgress = true;
-				m_vpSprite[enSprite_Number]->AddPatternHeight(1.0f);
-			}
-		}
-		else
-		{
-			FadeIn();
-		}
-
-		break;
-	case 4:
-		if (m_iTime / FPS >= fCameraMoveTime)
-		{
-			if (FadeOut())
+			if (m_pFadeSprite->FadeOut(FADE_SPEED))
 			{
 				m_iPhase++;
 				m_bWhenProgress = true;
@@ -489,52 +460,7 @@ void StartEventScene::PhaseProgress(const int iPhase)
 		}
 		else
 		{
-			FadeIn();
-		}
-
-		break;
-	case 5:
-		if (m_iTime / FPS >= fCountTime)
-		{
-			if (FadeOut())
-			{
-				m_iPhase++;
-				m_bWhenProgress = true;
-			}
-		}
-		else
-		{
-			FadeIn();
-		}
-
-		break;
-	case 6:
-		if (m_iTime / FPS >= fCameraMoveTime)
-		{
-			if (FadeOut())
-			{
-				m_iPhase++;
-				m_bWhenProgress = true;
-			}
-		}
-		else
-		{
-			FadeIn();
-		}
-
-		break;
-	case 7:
-		if (m_iTime / FPS >= fCountTime)
-		{
-			if (FadeOut())
-			{
-				m_iPhase++;
-				m_bWhenProgress = true;
-			}
-		}
-		else
-		{
-			FadeIn();
+			m_pFadeSprite->FadeIn(FADE_SPEED);
 		}
 
 		break;
@@ -567,38 +493,23 @@ void StartEventScene::PhaseInit(const int iPhase)
 		//カメラの位置を設定する.
 		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 1.0f});
 
-		break;
-	case 1:
-		//.
 		m_pPlayerModel->SetRot({ 0.0f, 0.0f, D3DXToRadian(-45) });
 		m_pPlayerModel->SetPos({ -4.0f, -4.0f, 0.0f });
 
 		break;
-	case 2:
-
-		break;
-	case 3:
-		//.
+	case 1:
 		m_pPlayerModel->SetRot({ 0.0f, 0.0f, D3DXToRadian(180) });
 		m_pPlayerModel->SetPos({ 0.0f, 4.0f, 0.0f });
 
 		break;
-	case 4:
-
-		break;
-	case 5:
-		//.
+	case 2:
 		m_pPlayerModel->SetRot({ 0.0f, 0.0f, D3DXToRadian(45) });
 		m_pPlayerModel->SetPos({ 4.0f, -4.0f, 0.0f });
 
 		break;
-	case 6:
-
-		break;
-	case 7:
-		//.
+	case 3:
 		m_pPlayerModel->SetRot({ D3DXToRadian(60), D3DXToRadian(180), 0.0f });
-		m_pPlayerModel->SetPos({ 0.0f, 0.0f, -8.0f });
+		m_pPlayerModel->SetPos({ 0.0f, -1.0f, -8.0f });
 
 		break;
 	default:
@@ -608,7 +519,6 @@ void StartEventScene::PhaseInit(const int iPhase)
 	m_bWhenProgress = false;
 }
 
-//.
 void StartEventScene::ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mProj, const int iPhase)
 {
 	//注視位置をクリア.
@@ -624,26 +534,29 @@ void StartEventScene::ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mPro
 	float fMoveSpeed = 0.08f;
 	switch (iPhase)
 	{
-	case 1:
+	case 0:
 		m_pPlayerModel->AddPos({ fMoveSpeed, fMoveSpeed, 0.0f });
 
 		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
-	case 3:
+	case 1:
 		m_pPlayerModel->AddPos({ 0.0f, -fMoveSpeed, 0.0f });
 
 		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
-	case 5:
+	case 2:
 		m_pPlayerModel->AddPos({ -fMoveSpeed, fMoveSpeed, 0.0f });
 
 		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
-	case 7:
-		m_pPlayerModel->AddPos({ 0.0f, 0.0f, fMoveSpeed * 2.0f });
+	case 3:
+		static float fAddY;
+		fAddY += 0.0004f;
+
+		m_pPlayerModel->AddPos({ 0.0f, fAddY, fMoveSpeed * 2.0f });
 
 		m_pPlayerModel->RenderModel(mView, mProj);
 
@@ -653,61 +566,7 @@ void StartEventScene::ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mPro
 	}
 }
 
-//フェードアウト.
-bool StartEventScene::FadeOut()
-{
-	//フェード用の画像が表示可能かどうかでフェード中を判断する.
-	//フェード中でない場合.
-	if (!m_pFadeSprite->IsDispFlg())
-	{
-		//フェード用の画像を表示可能にする.
-		m_pFadeSprite->SetDispFlg(true);
-	}
-
-	if (m_pFadeSprite->IsDispFlg())
-	{
-		RenderFadeMaskBuffer();
-
-		if (1.0f > m_pFadeSprite->GetAlpha())
-		{
-			m_pFadeSprite->AddAlpha(FADE_SPEED);
-		}
-		else
-		{
-			//フェードアウト完了.
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//フェードイン.
-bool StartEventScene::FadeIn()
-{
-	if (m_pFadeSprite->IsDispFlg())
-	{
-		RenderFadeMaskBuffer();
-
-		if (0.0f < m_pFadeSprite->GetAlpha())
-		{
-			m_pFadeSprite->AddAlpha(-FADE_SPEED);
-		}
-		else
-		{
-			//フェード用の画像を非表示にする.
-			m_pFadeSprite->SetDispFlg(false);
-			m_pFadeSprite->SetAlpha(0.0f);
-
-			//フェードイン完了.
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//フェード用のマスクの描画
+//フェード用のマスクの描画.
 void StartEventScene::RenderFadeMaskBuffer()
 {
 	//レンダーターゲットをフェード用画像に使うマスク用バッファに変える.
@@ -721,6 +580,26 @@ void StartEventScene::RenderFadeMaskBuffer()
 
 	//ルール画像を描画する.
 	m_pFadeMaskSprite->Render();
+
+	//レンダーターゲットを元に戻す.
+	pRTV = m_SceneNeedPointer.pBackBuffer_RTV;
+	m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &pRTV, m_SceneNeedPointer.pBackBuffer_DSV);
+}
+
+//カウントダウン用のマスクの描画.
+void StartEventScene::RenderCountDownMaskBuffer()
+{
+	//レンダーターゲットをフェード用画像に使うマスク用バッファに変える.
+	ID3D11RenderTargetView* pRTV = m_pCountDownMaskBuffer->GetRenderTargetView();
+	m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &pRTV, m_SceneNeedPointer.pBackBuffer_DSV);
+
+	//画面のクリア.
+	const float fClearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	m_SceneNeedPointer.pContext->ClearRenderTargetView(m_pCountDownMaskBuffer->GetRenderTargetView(), fClearColor);
+	m_SceneNeedPointer.pContext->ClearDepthStencilView(m_SceneNeedPointer.pBackBuffer_DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	//ルール画像を描画する.
+	m_pCountDownMaskSprite->Render();
 
 	//レンダーターゲットを元に戻す.
 	pRTV = m_SceneNeedPointer.pBackBuffer_RTV;

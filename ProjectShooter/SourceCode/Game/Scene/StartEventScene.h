@@ -14,8 +14,6 @@ private:
 	enum enSprite
 	{
 		enSprite_BackGround = 0,
-		enSprite_Number,
-		enSprite_Fire,
 
 		enSprite_Max
 	};
@@ -47,6 +45,11 @@ private:
 	TransitionsSprite*	m_pFadeSprite;
 	Sprite*				m_pFadeMaskSprite;
 	BackBuffer*			m_pFadeMaskBuffer;
+
+	//カウントダウン用画像.
+	TransitionsSprite*	m_pCountDownSprite;
+	Sprite*				m_pCountDownMaskSprite;
+	BackBuffer*			m_pCountDownMaskBuffer;
 
 	//演出の段階.
 	int m_iPhase;
@@ -81,15 +84,13 @@ private:
 	//演出の各段階の初期化.
 	void PhaseInit(const int iPhase);
 
-	//.
 	void ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mProj, const int iPhase);
 
-	//フェードアウト.
-	bool FadeOut();
-	//フェードイン.
-	bool FadeIn();
 	//フェード用のマスクの描画.
 	void RenderFadeMaskBuffer();
+
+	//カウントダウン用のマスクの描画.
+	void RenderCountDownMaskBuffer();
 
 #if _DEBUG
 

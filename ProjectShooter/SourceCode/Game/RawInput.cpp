@@ -97,7 +97,7 @@ void RawInput::ConfirmationPushedButton(RAWINPUT* RawInput)
 	case RI_MOUSE_WHEEL:
 		{
 			//‰ñ“]—Ê.
-			unsigned short sDelta = RawInput->data.mouse.usButtonData;
+			short sDelta = static_cast<short>(RawInput->data.mouse.usButtonData);
 
 			//‘O‰ñ‚Ì’[”‚ğ’Ç‰Á.
 			sDelta += m_iWheelFraction;

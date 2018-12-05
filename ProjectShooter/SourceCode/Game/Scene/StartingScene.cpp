@@ -35,7 +35,7 @@ StartingScene::StartingScene(SCENE_NEED_POINTER PointerGroup)
 	m_pFadeSprite->SetMaskTexture(m_pFadeMaskBuffer->GetShaderResourceView());
 
 	m_pFadeMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	m_pFadeMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Transitions_Starting.png");
+	m_pFadeMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Transitions1.png");
 
 	//位置をウインドウの中心に設定.
 	float fWindowWidthCenter = WINDOW_WIDTH / 2.0f;
@@ -178,6 +178,8 @@ void StartingScene::RenderSpriteProduct(const int iRenderLevel)
 
 		break;
 	case MAX_RENDER_LEVEL:
+
+		RenderFadeMaskBuffer();
 		//フェード用画像の描画.
 		m_pFadeSprite->Render();
 
@@ -405,7 +407,7 @@ void StartingScene::PhaseProgress(const int iPhase)
 	case 0:
 		if (m_pEventCamera->GetPos().z <= -1.5f)
 		{
-			if (FadeOut())
+			if (m_pFadeSprite->FadeOut(FADE_SPEED))
 			{
 				m_iPhase++;
 				m_bWhenProgress = true;
@@ -413,14 +415,14 @@ void StartingScene::PhaseProgress(const int iPhase)
 		}
 		else
 		{
-			FadeIn();
+			m_pFadeSprite->FadeIn(FADE_SPEED);
 		}
 
 		break;
 	case 1:
 		if (m_pEventCamera->GetPos().z <= -3.0f)
 		{
-			if (FadeOut())
+			if (m_pFadeSprite->FadeOut(FADE_SPEED))
 			{
 				m_iPhase++;
 				m_bWhenProgress = true;
@@ -428,14 +430,14 @@ void StartingScene::PhaseProgress(const int iPhase)
 		}
 		else
 		{
-			FadeIn();
+			m_pFadeSprite->FadeIn(FADE_SPEED);
 		}
 
 		break;
 	case 2:
 		if (m_pEventCamera->GetPos().z <= -2.0f)
 		{
-			if (FadeOut())
+			if (m_pFadeSprite->FadeOut(FADE_SPEED))
 			{
 				m_iPhase++;
 				m_bWhenProgress = true;
@@ -443,14 +445,14 @@ void StartingScene::PhaseProgress(const int iPhase)
 		}
 		else
 		{
-			FadeIn();
+			m_pFadeSprite->FadeIn(FADE_SPEED);
 		}
 
 		break;
 	case 3:
 		if (m_pEventCamera->GetPos().z <= -5.5f)
 		{
-			if (FadeOut())
+			if (m_pFadeSprite->FadeOut(FADE_SPEED))
 			{
 				m_iPhase++;
 				m_bWhenProgress = true;
@@ -458,14 +460,14 @@ void StartingScene::PhaseProgress(const int iPhase)
 		}
 		else
 		{
-			FadeIn();
+			m_pFadeSprite->FadeIn(FADE_SPEED);
 		}
 
 		break;
 	case 4:
 		if (m_pEventCamera->GetLookAt().y >= 4.0f)
 		{
-			if (FadeOut())
+			if (m_pFadeSprite->FadeOut(FADE_SPEED))
 			{
 				m_iPhase++;
 				m_bWhenProgress = true;
@@ -473,7 +475,7 @@ void StartingScene::PhaseProgress(const int iPhase)
 		}
 		else
 		{
-			FadeIn();
+			m_pFadeSprite->FadeIn(FADE_SPEED);
 		}
 
 		break;
@@ -598,60 +600,6 @@ void StartingScene::PhaseInit(const int iPhase)
 	}
 
 	m_bWhenProgress = false;
-}
-
-//フェードアウト.
-bool StartingScene::FadeOut()
-{
-	//フェード用の画像が表示可能かどうかでフェード中を判断する.
-	//フェード中でない場合.
-	if (!m_pFadeSprite->IsDispFlg())
-	{
-		//フェード用の画像を表示可能にする.
-		m_pFadeSprite->SetDispFlg(true);
-	}
-
-	if (m_pFadeSprite->IsDispFlg())
-	{
-		RenderFadeMaskBuffer();
-
-		if (1.0f > m_pFadeSprite->GetAlpha())
-		{
-			m_pFadeSprite->AddAlpha(FADE_SPEED);
-		}
-		else
-		{
-			//フェードアウト完了.
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//フェードイン.
-bool StartingScene::FadeIn()
-{
-	if (m_pFadeSprite->IsDispFlg())
-	{
-		RenderFadeMaskBuffer();
-
-		if (0.0f < m_pFadeSprite->GetAlpha())
-		{
-			m_pFadeSprite->AddAlpha(-FADE_SPEED);
-		}
-		else
-		{
-			//フェード用の画像を非表示にする.
-			m_pFadeSprite->SetDispFlg(false);
-			m_pFadeSprite->SetAlpha(0.0f);
-
-			//フェードイン完了.
-			return true;
-		}
-	}
-
-	return false;
 }
 
 //フェード用のマスクの描画

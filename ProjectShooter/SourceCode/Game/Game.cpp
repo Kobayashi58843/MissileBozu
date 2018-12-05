@@ -1,5 +1,8 @@
 #include "Game.h"
 
+//スレッド.
+#include <thread>
+
 #include "Sound\\SoundManager.h"
 #include "Effekseer\\CEffects.h"
 #include "Model\\ModelResource\\ModelResource.h"
@@ -12,6 +15,108 @@ const enSwitchToNextScene START_SCENE = enSwitchToNextScene::Starting;
 //フェードの速度.
 const float FADE_SPEED = 0.02f;
 
+//ロード画面.
+void Load(Direct3D* const pDirect3D, bool* const bEnd)
+{
+	BackBuffer* pFadeMaskBuffer = nullptr;
+	pFadeMaskBuffer = new BackBuffer(pDirect3D->GetDevice(), static_cast<UINT>(WINDOW_WIDTH), static_cast<UINT>(WINDOW_HEIGHT));
+	TransitionsSprite* pFadeSprite = nullptr;
+
+	D3DXVECTOR2 vDivisionQuantity = { 1.0f, 1.0f };
+	pFadeSprite = new TransitionsSprite(vDivisionQuantity.x, vDivisionQuantity.y);
+	pFadeSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\BackGroundSub.jpg");
+	pFadeSprite->SetMaskTexture(pFadeMaskBuffer->GetShaderResourceView());
+
+	Sprite* pFadeMaskSprite = nullptr;
+	pFadeMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
+	pFadeMaskSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\Transitions1.png");
+
+	Sprite* pTextSprite = nullptr;
+	pTextSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
+	pTextSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\LoadText.jpg");
+
+	float fWindowWidthCenter = WINDOW_WIDTH / 2.0f;
+	float fWindowHeightCenter = WINDOW_HEIGHT / 2.0f;
+	pFadeSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
+	pFadeMaskSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
+	pTextSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
+
+	pFadeSprite->SetDispFlg(true);
+	pFadeSprite->SetAlpha(1.0f);
+
+	static bool bBlackOut = true;
+
+	while (1)
+	{
+		//データのロード終了時スレッドを抜ける.
+		if (*bEnd)
+		{
+			SAFE_DELETE(pTextSprite);
+			SAFE_DELETE(pFadeSprite);
+			SAFE_DELETE(pFadeMaskSprite);
+			SAFE_DELETE(pFadeMaskBuffer);
+
+			return;
+		}
+		else
+		{
+			pDirect3D->SetDepth(false);
+
+			//レンダーターゲットをフェード用画像に使うマスク用バッファに変える.
+			ID3D11RenderTargetView* pRTV = pFadeMaskBuffer->GetRenderTargetView();
+			pDirect3D->GetDeviceContext()->OMSetRenderTargets(1, &pRTV, pDirect3D->GetDepthStencilView());
+
+			//画面のクリア.
+			float fClearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			pDirect3D->GetDeviceContext()->ClearRenderTargetView(pFadeMaskBuffer->GetRenderTargetView(), fClearColor);
+			pDirect3D->GetDeviceContext()->ClearDepthStencilView(pDirect3D->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+			pFadeMaskSprite->Render();
+
+			//レンダーターゲットを元に戻す.
+			pRTV = pDirect3D->GetRenderTargetView();
+			pDirect3D->GetDeviceContext()->OMSetRenderTargets(1, &pRTV, pDirect3D->GetDepthStencilView());
+
+			float fFadeSpeed = FADE_SPEED / 20.0f;
+
+			if (bBlackOut)
+			{
+				if (1.0f > pFadeSprite->GetAlpha())
+				{
+					pFadeSprite->AddAlpha(fFadeSpeed);
+				}
+				else
+				{
+					pFadeSprite->SetAlpha(1.0f);
+					bBlackOut = false;
+				}
+			}
+			else
+			{
+				if (0.0f < pFadeSprite->GetAlpha())
+				{
+					pFadeSprite->AddAlpha(-fFadeSpeed);
+				}
+				else
+				{
+					pFadeSprite->SetAlpha(0.0f);
+					bBlackOut = true;
+				}
+			}
+
+			//画面のクリア.
+			pDirect3D->GetDeviceContext()->ClearRenderTargetView(pDirect3D->GetRenderTargetView(), fClearColor);
+			pDirect3D->GetDeviceContext()->ClearDepthStencilView(pDirect3D->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+			pTextSprite->Render();
+			
+			pFadeSprite->Render();
+
+			pDirect3D->RenderSwapChain();
+		}
+	}	
+}
+
 Game::Game(const HWND hWnd)
 	: m_pScene(nullptr)
 	, m_bBlackOut(false)
@@ -23,6 +128,10 @@ Game::Game(const HWND hWnd)
 	//作成されたDirect3Dからデバイスなどを取ってくる.
 	m_pDevice = m_pDirect3D->GetDevice();
 	m_pDeviceContext = m_pDirect3D->GetDeviceContext();
+
+	//別スレッド.
+	bool bReadEnd = false;
+	std::thread LoadThread(Load, m_pDirect3D, &bReadEnd);
 
 	//シェーダの作成.
 	Singleton<ShaderGathering>().GetInstance().InitShader(m_pDevice, m_pDeviceContext);
@@ -70,6 +179,10 @@ Game::Game(const HWND hWnd)
 	m_pFadeSprite->SetAlpha(0.0f);
 
 	m_NextSceneTemporary = enSwitchToNextScene::Nothing;
+
+	//ロード終了.
+	bReadEnd = true;
+	LoadThread.join();
 }
 
 Game::~Game()

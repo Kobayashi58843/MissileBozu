@@ -13,7 +13,7 @@ const float SCOPE = 4.0f;
 const float LOOK_DISTANCE = 500.0f;
 
 //ã‰º‚ÌŒÀŠE‚ÌŠp“x.
-const int MAX_ANGLE_DEGREE = 20;
+const int MAX_ANGLE_DEGREE = 10;
 
 //‹——£‚ÌŒÀŠE.
 const float DISTANCE_MAX = 8.0f;
