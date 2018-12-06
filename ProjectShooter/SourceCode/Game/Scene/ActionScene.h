@@ -46,6 +46,7 @@ private:
 	Enemy* m_pEnemy;
 
 	clsDX9Mesh* m_pGround;
+	clsDX9Mesh* m_pSky;
 
 	BulletManager* m_pBulletManager;
 

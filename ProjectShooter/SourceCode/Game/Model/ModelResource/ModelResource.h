@@ -11,6 +11,7 @@ public:
 	enum enStaticModel
 	{
 		enStaticModel_Ground = 0,
+		enStaticModel_SkyBox,
 		enStaticModel_Shpere,
 
 		enStaticModel_Max,

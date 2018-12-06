@@ -32,7 +32,7 @@ void ContinueScene::Release()
 void ContinueScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 {
 	//BGMをループで再生.
-	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Clear);
+	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Over);
 
 	//スプライト更新.
 	UpdateSprite();

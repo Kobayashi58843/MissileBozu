@@ -11,6 +11,8 @@ EventModel::EventModel(clsD3DXSKINMESH* const pModel, const float fScale, const 
 	//位置.
 	m_vPos = POSITION;
 
+	m_vRot = { 0.0f, 0.0f, 0.0f };
+
 	//サイズ.
 	m_fScale = fScale;
 

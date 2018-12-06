@@ -35,16 +35,11 @@ private:
 	/*====/ モデル関連 /====*/
 	EventModel* m_pPlayerModel;
 
-	clsDX9Mesh* m_pGround;
+	clsDX9Mesh* m_pSky;
 
 	/*====/ スプライト関連 /====*/
 	DisplayBackBuffer*	m_pModelSprite;
 	BackBuffer*			m_pModelBuff;
-
-	//シーン切り替え時のフェード用画像.
-	TransitionsSprite*	m_pFadeSprite;
-	Sprite*				m_pFadeMaskSprite;
-	BackBuffer*			m_pFadeMaskBuffer;
 
 	//カウントダウン用画像.
 	TransitionsSprite*	m_pCountDownSprite;
@@ -56,6 +51,8 @@ private:
 
 	//演出が進んだタイミング用.
 	bool m_bWhenProgress;
+
+	float m_fAddY;
 
 	//スプライトの作成.
 	void CreateSprite();
@@ -85,9 +82,6 @@ private:
 	void PhaseInit(const int iPhase);
 
 	void ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mProj, const int iPhase);
-
-	//フェード用のマスクの描画.
-	void RenderFadeMaskBuffer();
 
 	//カウントダウン用のマスクの描画.
 	void RenderCountDownMaskBuffer();

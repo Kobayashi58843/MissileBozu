@@ -36,6 +36,8 @@ private:
 	EventModel* m_pPlayerModel;
 	EventModel* m_pEnemyModel;
 
+	clsDX9Mesh* m_pSky;
+
 	/*====/ スプライト関連 /====*/
 	DisplayBackBuffer*	m_pOneFrameSprite;
 	BackBuffer*			m_pOneFrameBuff;

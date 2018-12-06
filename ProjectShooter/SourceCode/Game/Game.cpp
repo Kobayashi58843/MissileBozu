@@ -15,6 +15,8 @@ const enSwitchToNextScene START_SCENE = enSwitchToNextScene::Starting;
 //フェードの速度.
 const float FADE_SPEED = 0.02f;
 
+bool LOAD_BLACKOUT_FLG = true;
+
 //ロード画面.
 void Load(Direct3D* const pDirect3D, bool* const bEnd)
 {
@@ -24,97 +26,116 @@ void Load(Direct3D* const pDirect3D, bool* const bEnd)
 
 	D3DXVECTOR2 vDivisionQuantity = { 1.0f, 1.0f };
 	pFadeSprite = new TransitionsSprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	pFadeSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\BackGroundSub.jpg");
+	pFadeSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\LoadText.png");
 	pFadeSprite->SetMaskTexture(pFadeMaskBuffer->GetShaderResourceView());
 
 	Sprite* pFadeMaskSprite = nullptr;
 	pFadeMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	pFadeMaskSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\Transitions1.png");
+	pFadeMaskSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\TitleMask1.png");
 
-	Sprite* pTextSprite = nullptr;
-	pTextSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	pTextSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\LoadText.jpg");
+	Sprite* pBackSprite = nullptr;
+	pBackSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
+	pBackSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\BackGround2.jpg");
 
 	float fWindowWidthCenter = WINDOW_WIDTH / 2.0f;
 	float fWindowHeightCenter = WINDOW_HEIGHT / 2.0f;
 	pFadeSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
 	pFadeMaskSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
-	pTextSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
+	pBackSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
 
 	pFadeSprite->SetDispFlg(true);
 	pFadeSprite->SetAlpha(1.0f);
 
-	static bool bBlackOut = true;
+	LOAD_BLACKOUT_FLG = true;
+
+	float fClearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+	//フレームレート調節準備.
+	float fRate = 0.0f;	//レート.
+	DWORD sync_old = timeGetTime();//過去時間.
+	DWORD sync_now;					//現在時間.
+
+	//時間処理の為、最小単位を1ミリ秒に変更.
+	timeBeginPeriod(1);
 
 	while (1)
 	{
-		//データのロード終了時スレッドを抜ける.
-		if (*bEnd)
+		Sleep(1);
+		//現在時間を取得.
+		sync_now = timeGetTime();
+
+		//理想時間を算出.
+		fRate = 1000.0f / FPS;
+		if (sync_now - sync_old >= fRate)
 		{
-			SAFE_DELETE(pTextSprite);
-			SAFE_DELETE(pFadeSprite);
-			SAFE_DELETE(pFadeMaskSprite);
-			SAFE_DELETE(pFadeMaskBuffer);
+			//現在時間に置き換え.
+			sync_old = sync_now;
 
-			return;
-		}
-		else
-		{
-			pDirect3D->SetDepth(false);
-
-			//レンダーターゲットをフェード用画像に使うマスク用バッファに変える.
-			ID3D11RenderTargetView* pRTV = pFadeMaskBuffer->GetRenderTargetView();
-			pDirect3D->GetDeviceContext()->OMSetRenderTargets(1, &pRTV, pDirect3D->GetDepthStencilView());
-
-			//画面のクリア.
-			float fClearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			pDirect3D->GetDeviceContext()->ClearRenderTargetView(pFadeMaskBuffer->GetRenderTargetView(), fClearColor);
-			pDirect3D->GetDeviceContext()->ClearDepthStencilView(pDirect3D->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-			pFadeMaskSprite->Render();
-
-			//レンダーターゲットを元に戻す.
-			pRTV = pDirect3D->GetRenderTargetView();
-			pDirect3D->GetDeviceContext()->OMSetRenderTargets(1, &pRTV, pDirect3D->GetDepthStencilView());
-
-			float fFadeSpeed = FADE_SPEED / 20.0f;
-
-			if (bBlackOut)
+			//データのロード終了時スレッドを抜ける.
+			if (*bEnd)
 			{
-				if (1.0f > pFadeSprite->GetAlpha())
-				{
-					pFadeSprite->AddAlpha(fFadeSpeed);
-				}
-				else
-				{
-					pFadeSprite->SetAlpha(1.0f);
-					bBlackOut = false;
-				}
+				SAFE_DELETE(pBackSprite);
+				SAFE_DELETE(pFadeSprite);
+				SAFE_DELETE(pFadeMaskSprite);
+				SAFE_DELETE(pFadeMaskBuffer);
+
+				return;
 			}
 			else
 			{
-				if (0.0f < pFadeSprite->GetAlpha())
+				pDirect3D->SetDepth(false);
+
+				//レンダーターゲットをフェード用画像に使うマスク用バッファに変える.
+				ID3D11RenderTargetView* pRTV = pFadeMaskBuffer->GetRenderTargetView();
+				pDirect3D->GetDeviceContext()->OMSetRenderTargets(1, &pRTV, pDirect3D->GetDepthStencilView());
+
+				//画面のクリア.
+				pDirect3D->GetDeviceContext()->ClearRenderTargetView(pFadeMaskBuffer->GetRenderTargetView(), fClearColor);
+				pDirect3D->GetDeviceContext()->ClearDepthStencilView(pDirect3D->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+				pFadeMaskSprite->Render();
+
+				//レンダーターゲットを元に戻す.
+				pRTV = pDirect3D->GetRenderTargetView();
+				pDirect3D->GetDeviceContext()->OMSetRenderTargets(1, &pRTV, pDirect3D->GetDepthStencilView());
+
+				if (LOAD_BLACKOUT_FLG)
 				{
-					pFadeSprite->AddAlpha(-fFadeSpeed);
+					if (1.0f > pFadeSprite->GetAlpha())
+					{
+						pFadeSprite->AddAlpha(FADE_SPEED);
+					}
+					else
+					{
+						pFadeSprite->SetAlpha(1.0f);
+						LOAD_BLACKOUT_FLG = false;
+					}
 				}
 				else
 				{
-					pFadeSprite->SetAlpha(0.0f);
-					bBlackOut = true;
+					if (0.0f < pFadeSprite->GetAlpha())
+					{
+						pFadeSprite->AddAlpha(-FADE_SPEED);
+					}
+					else
+					{
+						pFadeSprite->SetAlpha(0.0f);
+						LOAD_BLACKOUT_FLG = true;
+					}
 				}
+
+				//画面のクリア.
+				pDirect3D->GetDeviceContext()->ClearRenderTargetView(pDirect3D->GetRenderTargetView(), fClearColor);
+				pDirect3D->GetDeviceContext()->ClearDepthStencilView(pDirect3D->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+				pBackSprite->Render();
+
+				pFadeSprite->Render();
+
+				pDirect3D->RenderSwapChain();
 			}
-
-			//画面のクリア.
-			pDirect3D->GetDeviceContext()->ClearRenderTargetView(pDirect3D->GetRenderTargetView(), fClearColor);
-			pDirect3D->GetDeviceContext()->ClearDepthStencilView(pDirect3D->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-			pTextSprite->Render();
-			
-			pFadeSprite->Render();
-
-			pDirect3D->RenderSwapChain();
 		}
-	}	
+	}
 }
 
 Game::Game(const HWND hWnd)

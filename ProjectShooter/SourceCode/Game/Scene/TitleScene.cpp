@@ -156,7 +156,7 @@ void TitleScene::CreateSprite()
 
 			break;
 		case enSprite_BackGroundSub:
-			SpriteData = { "Data\\Image\\BackGroundSub.jpg", { 1.0f, 1.0f } };
+			SpriteData = { "Data\\Image\\BackGround1.jpg", { 1.0f, 1.0f } };
 
 			break;
 		case enSprite_Logo:
@@ -195,7 +195,7 @@ void TitleScene::CreateSprite()
 	}
 
 	m_pBackGroundSprite = new TitleBackgroundSprite(WINDOW_WIDTH, WINDOW_HEIGHT);
-	m_pBackGroundSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\TitleMask.png");
+	m_pBackGroundSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\TitleMask1.png");
 }
 
 //スプライトの解放.

@@ -18,6 +18,7 @@ StartingScene::StartingScene(SCENE_NEED_POINTER PointerGroup)
 	, m_pEventCamera(nullptr)
 	, m_pPlayerModel(nullptr)
 	, m_pEnemyModel(nullptr)
+	, m_pSky(nullptr)
 	, m_iPhase(0)
 	, m_bWhenProgress(true)
 {
@@ -76,6 +77,9 @@ void StartingScene::CreateProduct(const enSwitchToNextScene enNextScene)
 
 	m_pEnemyModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Enemy), 0.08f, ANIMETION_SPEED);
 	m_pEnemyModel->ChangeAnimation(5);
+
+	m_pSky = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_SkyBox);
+	m_pSky->SetScale(32.0f);
 }
 
 //解放.
@@ -83,6 +87,8 @@ void StartingScene::Release()
 {
 	SAFE_DELETE(m_pEnemyModel);
 	SAFE_DELETE(m_pPlayerModel);
+
+	m_pSky = nullptr;
 
 	SAFE_DELETE(m_pEventCamera);
 
@@ -103,7 +109,7 @@ void StartingScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 #endif //#if _DEBUG.
 
 	//BGMをループで再生.
-	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Clear);
+	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Title);
 
 
 
@@ -115,6 +121,11 @@ void StartingScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 
 	//次のシーンへ.
 	if (m_iPhase >= MAX_PHASE)
+	{
+		enNextScene = enSwitchToNextScene::Title;
+	}
+
+	if (Singleton<RawInput>().GetInstance().IsLButtonDown())
 	{
 		enNextScene = enSwitchToNextScene::Title;
 	}
@@ -209,7 +220,7 @@ void StartingScene::CreateSprite()
 
 			break;
 		case enSprite_BackGroundSub:
-			SpriteData = { "Data\\Image\\BackGroundSub.jpg", { 1.0f, 1.0f } };
+			SpriteData = { "Data\\Image\\BackGround1.jpg", { 1.0f, 1.0f } };
 
 			break;
 		case enSprite_PlayerText:
@@ -358,6 +369,8 @@ void StartingScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj,
 	case 4:
 		m_pPlayerModel->RenderModel(mView, mProj);
 		m_pEnemyModel->RenderModel(mView, mProj);
+
+		m_pSky->Render(mView, mProj);
 
 		break;
 	default:
@@ -586,8 +599,8 @@ void StartingScene::PhaseInit(const int iPhase)
 		{
 			//モデル同士の距離.
 			float fGap = 1.0f;
-			m_pPlayerModel->SetPos({ fGap, 0.0f, 0.0f });
-			m_pEnemyModel->SetPos({ -fGap, 0.0f, 0.0f });
+			m_pPlayerModel->SetPos({ -fGap, 0.0f, 0.0f });
+			m_pEnemyModel->SetPos({ fGap, 0.0f, 0.0f });
 		}
 
 		//名前の表示フラグ.
