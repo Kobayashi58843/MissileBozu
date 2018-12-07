@@ -51,6 +51,9 @@ private:
 	//背景画像.
 	TitleBackgroundSprite* m_pBackGroundSprite;
 
+	//ゲーム終了.
+	bool m_bEndGameFlg;
+
 	//スプライトの作成.
 	void CreateSprite();
 

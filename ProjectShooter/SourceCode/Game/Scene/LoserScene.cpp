@@ -32,7 +32,7 @@ void LoserScene::Release()
 void LoserScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 {
 	//BGMをループで再生.
-	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Over);
+	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Lose);
 
 	//スプライト更新.
 	UpdateSprite();

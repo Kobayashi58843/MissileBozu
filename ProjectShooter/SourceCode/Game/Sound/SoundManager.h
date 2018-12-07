@@ -13,10 +13,15 @@ class SoundManager
 public:
 	enum enBGM
 	{
-		enBGM_Title = 0,
+		enBGM_Starting = 0,
+		enBGM_Title,
+		enBGM_StartEvent,
 		enBGM_Action,
-		enBGM_Over,
+		enBGM_Win,
 		enBGM_Clear,
+		enBGM_Lose,
+		enBGM_Continue,
+		enBGM_Over,
 
 		enBGM_Max,
 	};
@@ -26,6 +31,8 @@ public:
 		//カーソルとボタン選択時のSE.
 		enSE_Cursor = 0,
 		enSE_PushButton,
+		enSE_Count,
+		enSE_Fire,
 
 		//プレイヤー用のSE.
 		enSE_PlayerDamage,

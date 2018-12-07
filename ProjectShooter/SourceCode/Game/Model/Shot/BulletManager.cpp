@@ -75,12 +75,12 @@ void BulletManager::CollisionJudgmentBullet(const SPHERE TargetSphere, clsDX9Mes
 				m_pEnemy->HitToSphere();
 			}
 
-			////弾のレイとメッシュが衝突しているか.
-			//if (m_ppBullet[i]->IsRayHit(pTargetMesh))
-			//{
-			//	//衝突.
-			//	m_ppBullet[i]->BulletHitToMesh();
-			//}
+			//弾のレイとメッシュが衝突しているか.
+			if (m_ppBullet[i]->IsRayHit(pTargetMesh))
+			{
+				//衝突.
+				m_ppBullet[i]->BulletHitToMesh();
+			}
 		}
 	}
 }

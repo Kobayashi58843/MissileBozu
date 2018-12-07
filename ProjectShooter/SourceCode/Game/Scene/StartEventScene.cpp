@@ -115,7 +115,7 @@ void StartEventScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 #endif //#if _DEBUG.
 
 	//BGMをループで再生.
-	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Title);
+	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_StartEvent);
 
 	m_iTime++;
 
@@ -184,15 +184,6 @@ void StartEventScene::RenderSpriteProduct(const int iRenderLevel)
 
 		break;
 	case 1:
-		if (m_iTime / FPS <= COUNT_TIME / 2.0f)
-		{
-			m_pCountDownSprite->FadeOut(FADE_SPEED);
-		}
-		else
-		{
-			m_pCountDownSprite->FadeIn(FADE_SPEED);
-		}
-
 		RenderCountDownMaskBuffer();
 		m_pCountDownSprite->Render();
 
@@ -319,15 +310,72 @@ void StartEventScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mPro
 	switch (iPhase)
 	{
 	case 0:
+		if (m_iTime / FPS <= COUNT_TIME / 2.0f)
+		{
+			if (m_pCountDownSprite->FadeOut(FADE_SPEED))
+			{
+				if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_Count))
+				{
+					Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Count);
+				}
+			}
+		}
+		else
+		{
+			m_pCountDownSprite->FadeIn(FADE_SPEED);
+		}
 
 		break;
 	case 1:
+		if (m_iTime / FPS <= COUNT_TIME / 2.0f)
+		{
+			if (m_pCountDownSprite->FadeOut(FADE_SPEED))
+			{
+				if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_Count))
+				{
+					Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Count);
+				}
+			}
+		}
+		else
+		{
+			m_pCountDownSprite->FadeIn(FADE_SPEED);
+		}
 
 		break;
 	case 2:
+		if (m_iTime / FPS <= COUNT_TIME / 2.0f)
+		{
+			if (m_pCountDownSprite->FadeOut(FADE_SPEED))
+			{
+				if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_Count))
+				{
+					Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Count);
+				}
+			}
+		}
+		else
+		{
+			m_pCountDownSprite->FadeIn(FADE_SPEED);
+		}
 
 		break;
 	case 3:
+		if (m_iTime / FPS <= COUNT_TIME / 2.0f)
+		{
+			if (m_pCountDownSprite->FadeOut(FADE_SPEED))
+			{
+				if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_Fire))
+				{
+					Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Fire);
+				}
+
+			}
+		}
+		else
+		{
+			m_pCountDownSprite->FadeIn(FADE_SPEED);
+		}
 
 		break;
 	default:
@@ -497,13 +545,12 @@ void StartEventScene::ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mPro
 
 		break;
 	case 3:
-		m_fAddY += 0.4f;
-
+		m_fAddY += 0.0008f;
 		m_pPlayerModel->AddPos({ 0.0f, m_fAddY, fMoveSpeed * 4.0f });
 
 		m_pPlayerModel->RenderModel(mView, mProj);
 
-		break;
+		//このフェーズ以降もキャラクターを表示したいのでbreakを消してます.
 	default:
 		break;
 	}

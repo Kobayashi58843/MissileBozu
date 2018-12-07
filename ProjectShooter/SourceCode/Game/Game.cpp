@@ -13,7 +13,7 @@
 const enSwitchToNextScene START_SCENE = enSwitchToNextScene::Starting;
 
 //フェードの速度.
-const float FADE_SPEED = 0.02f;
+const float FADE_SPEED = 0.025f;
 
 bool LOAD_BLACKOUT_FLG = true;
 
@@ -31,7 +31,7 @@ void Load(Direct3D* const pDirect3D, bool* const bEnd)
 
 	Sprite* pFadeMaskSprite = nullptr;
 	pFadeMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	pFadeMaskSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\TitleMask1.png");
+	pFadeMaskSprite->Create(pDirect3D->GetDevice(), pDirect3D->GetDeviceContext(), "Data\\Image\\LoadMask.png");
 
 	Sprite* pBackSprite = nullptr;
 	pBackSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
@@ -185,7 +185,7 @@ Game::Game(const HWND hWnd)
 	m_pFadeSprite->SetMaskTexture(m_pFadeMaskBuffer->GetShaderResourceView());
 
 	m_pFadeMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
-	m_pFadeMaskSprite->Create(m_pDevice, m_pDeviceContext, "Data\\Image\\Transitions.png");
+	m_pFadeMaskSprite->Create(m_pDevice, m_pDeviceContext, "Data\\Image\\Transitions3.png");
 
 	//位置をウインドウの中心に設定.
 	float fWindowWidthCenter = WINDOW_WIDTH / 2.0f;

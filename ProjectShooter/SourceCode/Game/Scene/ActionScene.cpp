@@ -41,8 +41,9 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	m_pEnemy = new Enemy(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Enemy));
 
 	m_pGround = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_Ground);
-	m_pGround->SetScale(32.0f);
-	m_pGround->SetPos({ 0.0f, -1.5f, 0.0f });
+	m_pGround->SetScale(2.0f);
+	m_pGround->SetRot({ 0.0f, 0.0f, 0.0f });
+	m_pGround->SetPos({ 0.0f, 0.0f, -20.0f });
 
 	m_pSky = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_SkyBox);
 	m_pSky->SetScale(10.0f);
@@ -89,7 +90,7 @@ void ActionScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	m_pPlayer->RayHitToMesh(m_pGround);
 
 	m_pEnemy->DecideTargetDirection(m_pPlayer->GetPos());
-	m_pEnemy->Update();
+	//m_pEnemy->Update();
 	m_pEnemy->RayHitToMesh(m_pGround);
 
 	m_pPlayer->HitToSphere(m_pEnemy->GetCollisionSphere());
@@ -129,7 +130,7 @@ void ActionScene::RenderModelProduct(const int iRenderLevel)
 
 		m_pEnemy->RenderModel(mView, mProj);
 
-		m_pSky->Render(mView, mProj);
+		//m_pSky->Render(mView, mProj);
 
 		m_pGround->Render(mView, mProj);
 
@@ -464,6 +465,9 @@ void ActionScene::RenderDebugText()
 
 	sprintf_s(cStrDbgTxt, "NowHp : [%i]", m_pPlayer->GetHp());
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 9));
+
+	sprintf_s(cStrDbgTxt, "Intersect : [X = %f],[Y = %f],[Z = %f] ", m_pPlayer->GetRayIntersect().x, m_pPlayer->GetRayIntersect().y, m_pPlayer->GetRayIntersect().z);
+	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 10));
 }
 
 //デバッグ中のみの操作.

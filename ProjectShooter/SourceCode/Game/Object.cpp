@@ -77,6 +77,7 @@ bool Object::Intersect(const D3DXVECTOR3 vAxis,
 	D3DXMatrixIdentity(&mScale);
 	
 	float fScale = pTarget->GetScale();
+	//float fScale = m_fScale;
 	D3DXMatrixScaling(&mScale, fScale, fScale, fScale);
 	
 	//‰ñ“].
@@ -86,7 +87,8 @@ bool Object::Intersect(const D3DXVECTOR3 vAxis,
 	D3DXMatrixIdentity(&mRoll);
 
 	D3DXVECTOR3 vRot = pTarget->GetRot();
-	D3DXMatrixRotationY(&mYaw, vRot.y);	//Y²‰ñ“].
+	//D3DXVECTOR3 vRot = m_vRot;
+	D3DXMatrixRotationY(&mYaw, vRot.y);		//Y²‰ñ“].
 	D3DXMatrixRotationX(&mPitch, vRot.x);	//X²‰ñ“].
 	D3DXMatrixRotationZ(&mRoll, vRot.z);	//Z²‰ñ“].
 
@@ -95,6 +97,7 @@ bool Object::Intersect(const D3DXVECTOR3 vAxis,
 	D3DXMatrixIdentity(&mTrans);
 
 	D3DXVECTOR3 vPos = pTarget->GetPos();
+	//D3DXVECTOR3 vPos = m_vPos;
 	D3DXMatrixTranslation(&mTrans, vPos.x, vPos.y, vPos.z);
 
 	//‡¬(Šgk~‰ñ“]~ˆÚ“®)

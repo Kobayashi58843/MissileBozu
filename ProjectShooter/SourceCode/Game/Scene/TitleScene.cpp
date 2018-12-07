@@ -16,12 +16,10 @@ TitleScene::TitleScene(SCENE_NEED_POINTER PointerGroup)
 	, m_pEventCamera(nullptr)
 	, m_pPlayerModel(nullptr)
 	, m_pEnemyModel(nullptr)
+	, m_bEndGameFlg(false)
 {
 	//全サウンドを停止する.
 	Singleton<SoundManager>().GetInstance().StopSound();
-
-	//シーン移動時のSE.
-	Singleton<SoundManager>().GetInstance().PlaySE(SoundManager::enSE_PushButton);
 }
 
 TitleScene::~TitleScene()
@@ -458,10 +456,32 @@ void TitleScene::ChangeScene(enSwitchToNextScene &enNextScene)
 		if (IsHittingOfSprite(enSprite_Cursor, enSprite_StartButton))
 		{
 			enNextScene = enSwitchToNextScene::StartEvent;
+			//シーン移動時のSE.
+			if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PushButton))
+			{
+				//SEを再生.
+				Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_PushButton);
+			}
 		}
 
 		//カーソルがエンドボタンの上にあるか.
 		if (IsHittingOfSprite(enSprite_Cursor, enSprite_EndButton))
+		{
+			//シーン移動時のSE.
+			if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PushButton) &&
+				!m_bEndGameFlg)
+			{
+				//SEを再生.
+				Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_PushButton);
+			}
+
+			m_bEndGameFlg = true;
+		}
+	}
+
+	if (m_bEndGameFlg)
+	{
+		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PushButton))
 		{
 			DestroyWindow(m_SceneNeedPointer.hWnd);
 		}

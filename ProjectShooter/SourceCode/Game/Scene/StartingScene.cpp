@@ -109,9 +109,7 @@ void StartingScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 #endif //#if _DEBUG.
 
 	//BGMをループで再生.
-	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Title);
-
-
+	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Starting);
 
 	//スプライト更新.
 	UpdateSprite();
@@ -128,6 +126,12 @@ void StartingScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	if (Singleton<RawInput>().GetInstance().IsLButtonDown())
 	{
 		enNextScene = enSwitchToNextScene::Title;
+		//シーン移動時のSE.
+		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PushButton))
+		{
+			//SEを再生.
+			Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_PushButton);
+		}
 	}
 }
 

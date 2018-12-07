@@ -23,7 +23,7 @@ const float RADIUS = 0.6f;
 const D3DXVECTOR3 POSITION = { 0.0f, 0.0f, -20.0f };
 
 //ˆÚ“®‰Â”\”ÍˆÍ.
-const float MOVE_LIMIT = 30.0f;
+const float MOVE_LIMIT = 300.0f;
 
 Player::Player(clsD3DXSKINMESH* const pModel, BulletManager* const pBulletManager)
 	: m_bPushedMoveButtonFlg(false)
@@ -46,6 +46,7 @@ Player::Player(clsD3DXSKINMESH* const pModel, BulletManager* const pBulletManage
 
 	SetAction(enAction::Wait);
 
+	m_Collision.vCenter = m_vPos;
 	m_Collision.fRadius = RADIUS;
 
 	m_pBulletManager = pBulletManager;

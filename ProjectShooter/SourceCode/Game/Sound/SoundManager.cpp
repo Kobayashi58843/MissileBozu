@@ -105,20 +105,40 @@ void SoundManager::LoadBGM(const HWND hWnd)
 
 		switch (i)
 		{
+		case enBGM_Starting:
+			sData = { "Data\\Sound\\BGM\\Starting.mp3", "Starting" };
+
+			break;
 		case enBGM_Title:
 			sData = { "Data\\Sound\\BGM\\Title.mp3", "Title" };
+
+			break;
+		case enBGM_StartEvent:
+			sData = { "Data\\Sound\\BGM\\StartEvent.mp3", "StartEvent" };
 
 			break;
 		case enBGM_Action:
 			sData = { "Data\\Sound\\BGM\\Action.mp3", "Action" };
 
 			break;
-		case enBGM_Over:
-			sData = { "Data\\Sound\\BGM\\Over.mp3", "Over" };
+		case enBGM_Win:
+			sData = { "Data\\Sound\\BGM\\Win.mp3", "Win" };
 
 			break;
 		case enBGM_Clear:
 			sData = { "Data\\Sound\\BGM\\Clear.mp3", "Clear" };
+
+			break;
+		case enBGM_Lose:
+			sData = { "Data\\Sound\\BGM\\Lose.mp3", "Lose" };
+
+			break;
+		case enBGM_Continue:
+			sData = { "Data\\Sound\\BGM\\Continue.mp3", "Continue" };
+
+			break;
+		case enBGM_Over:
+			sData = { "Data\\Sound\\BGM\\Over.mp3", "Over" };
 
 			break;
 		default:
@@ -158,6 +178,14 @@ void SoundManager::LoadSE(const HWND hWnd)
 				break;
 			case enSE_PushButton:
 				sData = { "Data\\Sound\\SE\\System\\PushButton.mp3", "PushButton" };
+
+				break;
+			case enSE_Count:
+				sData = { "Data\\Sound\\SE\\System\\Count.mp3", "Count" };
+
+				break;
+			case enSE_Fire:
+				sData = { "Data\\Sound\\SE\\System\\Fire.mp3", "Fire" };
 
 				break;
 			case enSE_PlayerDamage:
