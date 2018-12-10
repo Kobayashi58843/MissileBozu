@@ -138,6 +138,9 @@ private:
 	//前の注視点空間でのカメラの位置.
 	D3DXVECTOR3 m_vOldFocusingSpacePos;
 
+	//前フレームのワールド空間での位置.
+	D3DXVECTOR3 m_vOldPos;
+
 	//横にずらす.
 	float m_fDisplaceHorizontally;
 

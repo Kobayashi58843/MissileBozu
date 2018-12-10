@@ -44,7 +44,7 @@ public:
 
 private:
 	//Hp‚ÌÅ‘å’l.
-	const int m_iMaxHp = 10;
+	const int m_iMaxHp = 8;
 
 	bool m_bPushedMoveButtonFlg;
 

@@ -40,6 +40,10 @@ Enemy::Enemy(clsD3DXSKINMESH* const pModel)
 	//初期位置.
 	m_vPos = POSITION;
 
+	m_vOldPos = m_vPos;
+
+	CrearVECTOR3(m_vRot);
+
 	//サイズ.
 	m_fScale = SCALE;
 
@@ -66,10 +70,31 @@ Enemy::~Enemy()
 //レイとメッシュの衝突時.
 void Enemy::RayHitToMesh(clsDX9Mesh* const pTarget)
 {
-	if (IsRayHit(pTarget))
+	if (fabs(m_vPos.x) < MOVE_LIMIT &&
+		fabs(m_vPos.z) < MOVE_LIMIT)
 	{
-		//交点の座標からy座標を自機のy座標としてセット.
-		m_vPos.y = GetRayIntersect().y;
+		m_vOldPos = m_vPos;
+		m_vPos.y = m_vOldPos.y;
+	}
+	else
+	{
+		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_EnemyFall) &&
+			Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_EnemyFallVoice))
+		{
+			//音量を調整.
+			Singleton<SoundManager>().GetInstance().SetSEVolume(SoundManager::enSE_EnemyFallVoice, 1000);
+			Singleton<SoundManager>().GetInstance().SetSEVolume(SoundManager::enSE_EnemyFall, 600);
+
+			Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_EnemyFallVoice);
+			Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_EnemyFall);
+		}
+
+		m_vPos.y -= 0.05f;
+
+		if (m_vPos.y < -2.0f)
+		{
+			m_State.bDead = true;
+		}
 	}
 }
 
@@ -168,6 +193,9 @@ void Enemy::Dead()
 
 	if (IsAnimationRatioEnd(fRatio))
 	{
+		//アニメーション速度.
+		SetAnimationSpeed(0);
+
 		m_State.bDead = true;
 	}
 }

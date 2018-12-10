@@ -48,6 +48,8 @@ Camera::Camera(const float fWindowWidth, const float fWindowHeight)
 	m_Collision.vCenter = m_vPos;
 
 	m_vOldFocusingSpacePos = m_vPos + m_vFocusingSpacePos;
+
+	m_vOldPos = m_vWorldPos;
 }
 
 Camera::~Camera()
@@ -84,6 +86,9 @@ void Camera::Update()
 	//カメラのワールド座標.
 	m_vWorldPos = m_vFocusingSpacePos + m_vLookAt;
 
+	//移動後の位置をレイ用のものに入れる.
+	UpdateState();
+
 	//ビュー行列更新.
 	memcpy(&m_mView, &m_mCameraPose, sizeof(D3DXMATRIX));
 	memcpy(&m_mView.m[3], &m_vWorldPos, sizeof(D3DXVECTOR3));
@@ -100,6 +105,11 @@ void Camera::Update()
 	CrearVECTOR3(m_vCameraMoveDirDif);
 	m_fOffsetZ = 0.0f;
 	CrearVECTOR3(m_vCamRotDif);
+}
+
+//レイとメッシュの衝突時.
+void Camera::RayHitToMesh(clsDX9Mesh* const pTarget)
+{
 }
 
 //プロジェクション(射影行列)変換.
@@ -122,16 +132,13 @@ void Camera::Move(const D3DXVECTOR3 vDif)
 	D3DXMATRIX mTransRot;
 	D3DXMatrixRotationQuaternion(&mTransRot, &qTrans);
 	D3DXVec3TransformCoord(&m_vFocusingSpacePos, &m_vFocusingSpacePos, &mTransRot);
-
-	//移動後の位置をレイ用のものに入れる.
-	UpdateState();
 }
 
 //移動制限.
 void Camera::MoveLimit()
 {
 	float fDistance = D3DXVec3Length(&m_vFocusingSpacePos);
-	float fCamAngleY = atan(fDistance / m_vFocusingSpacePos.y);
+	float fCamAngleY = atanf(fDistance / m_vFocusingSpacePos.y);
 
 	if (D3DXToRadian(90) - fabs(fCamAngleY) < D3DXToRadian(MAX_ANGLE_DEGREE))
 	{
@@ -141,7 +148,7 @@ void Camera::MoveLimit()
 	else
 	{
 		//範囲外の場合は前の位置に戻す.
-		m_vFocusingSpacePos = m_vOldFocusingSpacePos;
+		m_vFocusingSpacePos.y = m_vOldFocusingSpacePos.y;
 	}
 }
 
@@ -185,6 +192,11 @@ void Camera::OffsetZUpdate()
 //位置,回転,サイズを適応.
 void Camera::UpdateState()
 {
-	m_vPos = m_vFocusingSpacePos + m_vLookAt;
+	CrearVECTOR3(m_vRot);
+	m_fScale = 0.0f;
+
+	m_Collision.fRadius = 1.0f;
+
+	m_vPos = m_vWorldPos;
 	m_Collision.vCenter = m_vPos;
 }

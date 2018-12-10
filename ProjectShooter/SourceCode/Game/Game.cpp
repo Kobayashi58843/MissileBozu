@@ -10,16 +10,28 @@
 #include "..\\Singleton.h"
 
 //ゲーム開始時のシーン.
-const enSwitchToNextScene START_SCENE = enSwitchToNextScene::Starting;
+const enSwitchToNextScene START_SCENE = enSwitchToNextScene::Action;
 
 //フェードの速度.
 const float FADE_SPEED = 0.025f;
 
+//ロード画面のフェード.
 bool LOAD_BLACKOUT_FLG = true;
 
+//ロードの終了時の効果音.
+bool LOAD_END_SE_FLG = false;
+
 //ロード画面.
-void Load(Direct3D* const pDirect3D, bool* const bEnd)
+void Load(const HWND hWnd, Direct3D* const pDirect3D, bool* const bEnd)
 {
+	Sound* m_pRoll = nullptr;
+	m_pRoll = new Sound;
+	m_pRoll->Open("Data\\Sound\\SE\\System\\Roll.mp3", "Roll", hWnd);
+
+	Sound* m_pRollEnd = nullptr;
+	m_pRollEnd = new Sound;
+	m_pRollEnd->Open("Data\\Sound\\SE\\System\\RollEnd.mp3", "RollEnd", hWnd);
+
 	BackBuffer* pFadeMaskBuffer = nullptr;
 	pFadeMaskBuffer = new BackBuffer(pDirect3D->GetDevice(), static_cast<UINT>(WINDOW_WIDTH), static_cast<UINT>(WINDOW_HEIGHT));
 	TransitionsSprite* pFadeSprite = nullptr;
@@ -74,15 +86,42 @@ void Load(Direct3D* const pDirect3D, bool* const bEnd)
 			//データのロード終了時スレッドを抜ける.
 			if (*bEnd)
 			{
-				SAFE_DELETE(pBackSprite);
-				SAFE_DELETE(pFadeSprite);
-				SAFE_DELETE(pFadeMaskSprite);
-				SAFE_DELETE(pFadeMaskBuffer);
+				if (m_pRollEnd->IsStopped() && !LOAD_END_SE_FLG)
+				{
+					m_pRoll->Stop();
 
-				return;
+					m_pRollEnd->SeekToStart();
+					m_pRollEnd->Play();
+
+					LOAD_END_SE_FLG = true;
+				}
+
+				if (m_pRollEnd->IsStopped() && LOAD_END_SE_FLG)
+				{
+					SAFE_DELETE(pBackSprite);
+					SAFE_DELETE(pFadeSprite);
+					SAFE_DELETE(pFadeMaskSprite);
+					SAFE_DELETE(pFadeMaskBuffer);
+
+					m_pRollEnd->Stop();
+					m_pRollEnd->Close();
+					SAFE_DELETE(m_pRollEnd);
+
+					m_pRoll->Stop();
+					m_pRoll->Close();
+					SAFE_DELETE(m_pRoll);
+
+					return;
+				}
 			}
 			else
 			{
+				if (m_pRoll->IsStopped())
+				{
+					m_pRoll->SeekToStart();
+					m_pRoll->Play();
+				}
+
 				pDirect3D->SetDepth(false);
 
 				//レンダーターゲットをフェード用画像に使うマスク用バッファに変える.
@@ -152,7 +191,7 @@ Game::Game(const HWND hWnd)
 
 	//別スレッド.
 	bool bReadEnd = false;
-	std::thread LoadThread(Load, m_pDirect3D, &bReadEnd);
+	std::thread LoadThread(Load, hWnd, m_pDirect3D, &bReadEnd);
 
 	//シェーダの作成.
 	Singleton<ShaderGathering>().GetInstance().InitShader(m_pDevice, m_pDeviceContext);

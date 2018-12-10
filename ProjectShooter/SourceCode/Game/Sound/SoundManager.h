@@ -51,6 +51,8 @@ public:
 		enSE_EnemyAttack,
 		enSE_EnemyAttackVoice,
 		enSE_EnemyGuard,
+		enSE_EnemyFall,
+		enSE_EnemyFallVoice,
 
 		enSE_Explosion,
 
@@ -80,6 +82,12 @@ public:
 		m_pBGM[Index]->Stop();
 	}
 
+	//BGMの音量設定.
+	void SetBGMVolume(const enSE Index, const int iVolume)
+	{
+		m_pBGM[Index]->SetVolume(iVolume);
+	}
+
 	//SEをはじめから再生.
 	void PlaySE(const enSE Index, const int iVolume = 1000);
 
@@ -91,6 +99,9 @@ public:
 
 	//SEの1つ目が停止中か確認する.
 	bool IsStoppedFirstSE(const enSE Index);
+
+	//SEの音量設定.
+	void SetSEVolume(const enSE Index, const int iVolume);
 
 	//全サウンドを停止する.
 	void StopSound();

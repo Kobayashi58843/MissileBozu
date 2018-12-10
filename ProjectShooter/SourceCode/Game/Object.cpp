@@ -8,8 +8,8 @@ Object::Object()
 
 	CrearVECTOR3(m_vPos);
 	CrearVECTOR3(m_vRot);
-
-	CrearVECTOR3(m_vIntersect);
+	CrearVECTOR3(m_vUpperIntersect);
+	CrearVECTOR3(m_vUnderIntersect);
 }
 
 Object::~Object()
@@ -19,30 +19,42 @@ Object::~Object()
 //レイと対象のメッシュが衝突しているか.
 bool Object::IsRayHit(clsDX9Mesh* const pTarget)
 {
-	//軸ベクトルは垂直で下向き.
+	////軸ベクトルは垂直で下向き.
+	//D3DXVECTOR3 vAxis = { 0.0f, -1.0f, 0.0f };
+
+	//CrearVECTOR3(m_vIntersect);
+
+	////距離.
+	//float fDistance = 0.0f;
+
+	////レイとメッシュの当たり判定.
+	//bool bHit = Intersect(vAxis, pTarget, &fDistance, &m_vIntersect);
+
+	//if (bHit)
+	//{
+	//	D3DXVECTOR3 vLength = m_Collision.vCenter - m_vIntersect;
+	//	float fLength = D3DXVec3Length(&vLength);
+
+	//	if (fabs(fLength) > m_Collision.fRadius)
+	//	{
+	//		bHit = false;
+	//	}
+	//}
+
+	//下方向の交点座標.
 	D3DXVECTOR3 vAxis = { 0.0f, -1.0f, 0.0f };
-
-	CrearVECTOR3(m_vIntersect);
-
-	//距離.
 	float fDistance = 0.0f;
+	Intersect(vAxis, pTarget, &fDistance, &m_vUnderIntersect);
 
-	//レイとメッシュの当たり判定.
-	bool bHit = Intersect(vAxis, pTarget, &fDistance, &m_vIntersect);
+	//上方向の交点座標.
+	vAxis = { 0.0f, 1.0f, 0.0f };
+	fDistance = 0.0f;
+	Intersect(vAxis, pTarget, &fDistance, &m_vUpperIntersect);
 
-	if (bHit)
-	{
-		D3DXVECTOR3 vLength = m_Collision.vCenter - m_vIntersect;
-		float fLength = D3DXVec3Length(&vLength);
+	bool bHit = false;
 
-		if (fabs(fLength) > m_Collision.fRadius)
-		{
-			bHit = false;
-		}
-	}
-
-	//壁との当たり判定.
-	PrtWall(pTarget, &bHit);
+	//当たり判定.
+	HitCheckMeshByRay(pTarget, &bHit);
 
 	//衝突.
 	return bHit;
@@ -51,8 +63,8 @@ bool Object::IsRayHit(clsDX9Mesh* const pTarget)
 //レイとメッシュの当たり判定.
 bool Object::Intersect(const D3DXVECTOR3 vAxis,
 	clsDX9Mesh* const pTarget,	//対象の物体.
-	float* pfDistance,			//(out)距離.
-	D3DXVECTOR3* pvIntersect)	//(out)交差座標.
+	float* pDistance,			//(out)距離.
+	D3DXVECTOR3* pIntersect)	//(out)交差座標.
 {
 	D3DXMATRIXA16 matRot;//回転行列.
 
@@ -77,7 +89,6 @@ bool Object::Intersect(const D3DXVECTOR3 vAxis,
 	D3DXMatrixIdentity(&mScale);
 	
 	float fScale = pTarget->GetScale();
-	//float fScale = m_fScale;
 	D3DXMatrixScaling(&mScale, fScale, fScale, fScale);
 	
 	//回転.
@@ -87,7 +98,6 @@ bool Object::Intersect(const D3DXVECTOR3 vAxis,
 	D3DXMatrixIdentity(&mRoll);
 
 	D3DXVECTOR3 vRot = pTarget->GetRot();
-	//D3DXVECTOR3 vRot = m_vRot;
 	D3DXMatrixRotationY(&mYaw, vRot.y);		//Y軸回転.
 	D3DXMatrixRotationX(&mPitch, vRot.x);	//X軸回転.
 	D3DXMatrixRotationZ(&mRoll, vRot.z);	//Z軸回転.
@@ -97,7 +107,6 @@ bool Object::Intersect(const D3DXVECTOR3 vAxis,
 	D3DXMatrixIdentity(&mTrans);
 
 	D3DXVECTOR3 vPos = pTarget->GetPos();
-	//D3DXVECTOR3 vPos = m_vPos;
 	D3DXMatrixTranslation(&mTrans, vPos.x, vPos.y, vPos.z);
 
 	//合成(拡縮×回転×移動)
@@ -129,7 +138,7 @@ bool Object::Intersect(const D3DXVECTOR3 vAxis,
 		&bHit,				//(out)判定結果.
 		&dwIndex,			//(out)bHitがTrueの時、レイの始点に。最も近くの面のインデックス値へのポインタ.
 		&U, &V,				//(out)重心ヒット座標.
-		pfDistance,			//ターゲットとの距離.
+		pDistance,			//ターゲットとの距離.
 		NULL, NULL);
 
 	if (bHit)
@@ -139,7 +148,7 @@ bool Object::Intersect(const D3DXVECTOR3 vAxis,
 
 		//中心座標から交差点を算出.
 		//ローカル交点pは、v0 + U*(v1-v0) + V*(v2-v0)で求まる.
-		*pvIntersect =
+		*pIntersect =
 			vVertex[0]
 			+ U * (vVertex[1] - vVertex[0])
 			+ V * (vVertex[2] - vVertex[0]);
@@ -191,10 +200,11 @@ HRESULT Object::FindVecticesOnPoly(const LPD3DXMESH pTarget, const DWORD dwPolyI
 	return S_OK;
 }
 
-//壁の当たり判定間連.
-void Object::PrtWall(clsDX9Mesh* const pWall, bool* bHit)
+//当たり判定間連.
+void Object::HitCheckMeshByRay(clsDX9Mesh* const pWall, bool* bHit)
 {
-	D3DXVECTOR3 vAxis[8];
+	const int iDirectionMax = 10;
+	D3DXVECTOR3 vAxis[iDirectionMax];
 
 	FLOAT fDistance;//距離.
 	float fDis, fYaw;//距離と回転.
@@ -209,13 +219,16 @@ void Object::PrtWall(clsDX9Mesh* const pWall, bool* bHit)
 	vAxis[6] = { -1.0f, 0.0f, 0.0f };	//軸ベクトル左.
 	vAxis[7] = { -1.0f, 0.0f, 1.0f };	//軸ベクトル左前.
 
+	vAxis[8] = { 0.0f, 1.0f, 0.0f };
+	vAxis[9] = { 0.0f, -1.0f, 0.0f };
+
 	fYaw = fabs(m_vRot.y);//fabs:絶対値(float版)
 	dirOverGuard(&fYaw);//0～2πの間に収める.
 
 	D3DXMATRIX mYaw;
 	D3DXMatrixRotationY(&mYaw, m_vRot.y);//Y軸回転.
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < iDirectionMax; i++)
 	{
 		D3DXVECTOR3 vIntersect;
 		Intersect(vAxis[i], pWall, &fDistance, &vIntersect);

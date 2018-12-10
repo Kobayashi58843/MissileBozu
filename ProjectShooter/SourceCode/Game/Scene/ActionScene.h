@@ -35,8 +35,6 @@ private:
 	/*====/ ƒJƒƒ‰ŠÖ˜A /====*/
 	Camera* m_pCamera;
 
-	float m_fOldCameraDistance;
-
 	//ƒJƒƒ‰‚Ì‘€ì.
 	void ControlCameraMove();
 

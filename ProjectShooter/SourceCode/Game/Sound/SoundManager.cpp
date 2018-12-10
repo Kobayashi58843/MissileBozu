@@ -96,6 +96,15 @@ bool SoundManager::IsStoppedFirstSE(const enSE Index)
 	return false;
 }
 
+//SEÇÃâπó ê›íË.
+void SoundManager::SetSEVolume(const enSE Index, const int iVolume)
+{
+	for (int i = 0; i < DUPLICABLE_MAX; i++)
+	{
+		m_pSE[Index][i]->SetVolume(iVolume);
+	}
+}
+
 //BGMÇÉçÅ[ÉhÇ∑ÇÈ.
 void SoundManager::LoadBGM(const HWND hWnd)
 {
@@ -242,6 +251,14 @@ void SoundManager::LoadSE(const HWND hWnd)
 				break;
 			case enSE_EnemyGuard:
 				sData = { "Data\\Sound\\SE\\Enemy\\EnemyGuard.mp3", "EnemyGuard" };
+
+				break;
+			case enSE_EnemyFall:
+				sData = { "Data\\Sound\\SE\\Enemy\\EnemyFall.mp3", "EnemyFall" };
+
+				break;
+			case enSE_EnemyFallVoice:
+				sData = { "Data\\Sound\\SE\\Enemy\\Voice\\EnemyFallVoice.mp3", "EnemyFallVoice" };
 
 				break;
 			case enSE_Explosion:

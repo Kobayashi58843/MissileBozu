@@ -49,6 +49,9 @@ private:
 	//モデルに向かせたい方向.
 	float m_fTargetDirection;
 
+	//移動前の位置.
+	D3DXVECTOR3 m_vOldPos;
+
 	//プレイヤーの位置.
 	D3DXVECTOR3 m_vPlayerPosition;
 

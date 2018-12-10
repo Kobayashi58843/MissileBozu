@@ -22,9 +22,6 @@ const float RADIUS = 0.6f;
 //初期位置.
 const D3DXVECTOR3 POSITION = { 0.0f, 0.0f, -20.0f };
 
-//移動可能範囲.
-const float MOVE_LIMIT = 300.0f;
-
 Player::Player(clsD3DXSKINMESH* const pModel, BulletManager* const pBulletManager)
 	: m_bPushedMoveButtonFlg(false)
 	, m_fTargetDirection(0.0f)
@@ -37,6 +34,8 @@ Player::Player(clsD3DXSKINMESH* const pModel, BulletManager* const pBulletManage
 	m_vPos = POSITION;
 
 	m_vOldPos = m_vPos;
+
+	CrearVECTOR3(m_vRot);
 
 	//サイズ.
 	m_fScale = SCALE;
@@ -73,8 +72,6 @@ void Player::RayHitToMesh(clsDX9Mesh* const pTarget)
 {
 	if (IsRayHit(pTarget))
 	{
-		//交点の座標からy座標を自機のy座標としてセット.
-		m_vPos.y = GetRayIntersect().y;
 	}
 }
 
@@ -157,6 +154,9 @@ void Player::Dead()
 
 	if (IsAnimationRatioEnd(fRatio))
 	{
+		//アニメーション速度.
+		SetAnimationSpeed(0);
+
 		m_State.bDead = true;
 	}
 }
@@ -316,6 +316,9 @@ void Player::MoveLimit()
 	//		m_pEffect->SetRotation(m_WallHitHandle, { 0.0f, fYaw, 0.0f });
 	//	}
 	//}
+
+	m_vOldPos.y = m_vPos.y;
+	m_vPos.y = m_vOldPos.y;
 
 	if (fabs(m_vPos.x) < MOVE_LIMIT)
 	{
