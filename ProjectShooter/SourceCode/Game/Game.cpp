@@ -116,12 +116,6 @@ void Load(const HWND hWnd, Direct3D* const pDirect3D, bool* const bEnd)
 			}
 			else
 			{
-				if (m_pRoll->IsStopped())
-				{
-					m_pRoll->SeekToStart();
-					m_pRoll->Play();
-				}
-
 				pDirect3D->SetDepth(false);
 
 				//レンダーターゲットをフェード用画像に使うマスク用バッファに変える.
@@ -148,6 +142,12 @@ void Load(const HWND hWnd, Direct3D* const pDirect3D, bool* const bEnd)
 					{
 						pFadeSprite->SetAlpha(1.0f);
 						LOAD_BLACKOUT_FLG = false;
+
+						if (m_pRoll->IsStopped())
+						{
+							m_pRoll->SeekToStart();
+							m_pRoll->Play();
+						}
 					}
 				}
 				else
