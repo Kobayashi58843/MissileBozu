@@ -103,7 +103,7 @@ void Player::Wait()
 
 void Player::Move()
 {
-	const float fTurnSpeed = 0.1f;
+	const float fTurnSpeed = 0.4f;
 	m_fTargetDirection += static_cast<float>D3DXToRadian(ADJUST_MODEL_ORIENTATION);
 	SpinModel(m_fTargetDirection, fTurnSpeed);
 

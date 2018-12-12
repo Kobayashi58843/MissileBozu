@@ -1,6 +1,6 @@
 #include "ActionScene.h"
 
-const float CAMERA_MOVE_SPEED = 0.2f;
+const float CAMERA_MOVE_SPEED = 0.4f;
 
 ActionScene::ActionScene(SCENE_NEED_POINTER PointerGroup)
 	: BaseScene(PointerGroup)
@@ -170,14 +170,19 @@ void ActionScene::ControlCameraMove()
 	}
 
 	/*====/ カメラの距離 /====*/
-	//マウスホイール時.
-	if (Singleton<RawInput>().GetInstance().IsWheelForward())
+	if (Singleton<RawInput>().GetInstance().IsRButtonHoldDown())
 	{
-		m_pCamera->SetOffsetZ(1.0f);
+		if (m_pCamera->GetDistance() > 1.0f)
+		{
+			m_pCamera->SetOffsetZ(1.0f);
+		}
 	}
-	else if (Singleton<RawInput>().GetInstance().IsWheelBackward())
+	else
 	{
-		m_pCamera->SetOffsetZ(-1.0f);
+		if (m_pCamera->GetDistance() < 5.0f)
+		{
+			m_pCamera->SetOffsetZ(-1.0f);
+		}
 	}
 }
 
@@ -432,19 +437,9 @@ void ActionScene::RenderDebugText()
 		m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 7));
 	}
 
-	sprintf_s(cStrDbgTxt, "MaxHp : [%i]", m_pPlayer->GetHpMax());
+	float fCamAngle = atanf(m_pCamera->GetFocusingSpacePos().y);
+	sprintf_s(cStrDbgTxt, "CamAngle : [%f]", fCamAngle);
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 8));
-
-	sprintf_s(cStrDbgTxt, "NowHp : [%i]", m_pPlayer->GetHp());
-	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 9));
-
-	sprintf_s(cStrDbgTxt, "UpperIntersect : [X = %f],[Y = %f],[Z = %f] ",
-		m_pPlayer->GetUpperRayIntersect().x, m_pPlayer->GetUpperRayIntersect().y, m_pPlayer->GetUpperRayIntersect().z);
-	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 10));
-
-	sprintf_s(cStrDbgTxt, "UnderIntersect : [X = %f],[Y = %f],[Z = %f] ",
-		m_pPlayer->GetUnderRayIntersect().x, m_pPlayer->GetUnderRayIntersect().y, m_pPlayer->GetUnderRayIntersect().z);
-	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 11));
 }
 
 //デバッグ中のみの操作.

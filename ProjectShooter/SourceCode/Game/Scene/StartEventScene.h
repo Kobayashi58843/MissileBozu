@@ -28,6 +28,11 @@ private:
 
 	int m_iTime;
 
+	/*====/ エフェクト関連 /====*/
+	clsEffects* m_pEffect;
+	//ハンドル.
+	::Effekseer::Handle m_MissileHandle;
+
 	/*====/ カメラ関連 /====*/
 	EventCamera* m_pEventCamera;
 	EventCamera* m_pModelSpriteCamera;

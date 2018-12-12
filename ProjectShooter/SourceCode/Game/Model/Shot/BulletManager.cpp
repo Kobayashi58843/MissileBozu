@@ -25,7 +25,8 @@ BulletManager::~BulletManager()
 	for ( int i = 0; i < m_iBulletMax; i++)
 	{
 		//SAFE_DELETE_ARRAY(m_ppBullet[i]);
-		if (m_ppBullet[i] != nullptr){
+		if (m_ppBullet[i] != nullptr)
+		{
 			delete m_ppBullet[i];
 		}
 	}

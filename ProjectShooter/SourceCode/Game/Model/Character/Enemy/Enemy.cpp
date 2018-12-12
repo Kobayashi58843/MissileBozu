@@ -174,7 +174,7 @@ void Enemy::Attack()
 
 void Enemy::Hit()
 {
-	if (0 >= m_State.iHp)
+	if (m_State.iHp <= 0)
 	{
 		SetAction(enAction::Dead);
 	}
@@ -272,11 +272,11 @@ void Enemy::SetAction(const enAction Action)
 		Singleton<SoundManager>().GetInstance().PlaySE(SoundManager::enSE_EnemyDeadVoice);
 
 		//エフェクトを再生.
-		m_DeadHandle = m_pEffect->Play(vEffectPos, clsEffects::enEfcType_EnemyDead);
-		{
-			const float fDeadEffectScale = 0.01f;
-			m_pEffect->SetScale(m_DeadHandle, { fDeadEffectScale, fDeadEffectScale, fDeadEffectScale });
-		}
+		//m_DeadHandle = m_pEffect->Play(vEffectPos, clsEffects::enEfcType_EnemyDead);
+		//{
+		//	const float fDeadEffectScale = 0.01f;
+		//	m_pEffect->SetScale(m_DeadHandle, { fDeadEffectScale, fDeadEffectScale, fDeadEffectScale });
+		//}
 
 		break;
 	default:

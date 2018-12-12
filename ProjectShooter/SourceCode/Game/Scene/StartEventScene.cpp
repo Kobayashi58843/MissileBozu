@@ -56,10 +56,18 @@ StartEventScene::StartEventScene(SCENE_NEED_POINTER PointerGroup)
 
 	//透過値を0にする.
 	m_pCountDownSprite->SetAlpha(0.0f);
+
+	m_pEffect = clsEffects::GetInstance();
+
+	//起動後1回目のエフェクトが再生されないためその対応として1回再生しておく.
+	m_MissileHandle = m_pEffect->Play({ 0.0f, 0.0f, 0.0f }, clsEffects::enEfcType_Missile);
+	m_pEffect->Stop(m_MissileHandle);
 }
 
 StartEventScene::~StartEventScene()
 {
+	m_pEffect->Stop(m_MissileHandle);
+
 	SAFE_DELETE(m_pCountDownSprite);
 
 	SAFE_DELETE(m_pCountDownMaskSprite);
@@ -153,6 +161,9 @@ void StartEventScene::RenderModelProduct(const int iRenderLevel)
 		m_SceneNeedPointer.pContext->ClearDepthStencilView(m_SceneNeedPointer.pBackBuffer_DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 		ModelControl(m_pModelSpriteCamera->GetView(), m_pModelSpriteCamera->GetProjection(),m_iPhase);
+
+		//エフェクトの描画.
+		clsEffects::GetInstance()->Render(mView, mProj, m_pEventCamera->GetPos());
 
 		//レンダーターゲットを元に戻す.
 		m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &m_SceneNeedPointer.pBackBuffer_RTV, m_SceneNeedPointer.pBackBuffer_DSV);
@@ -523,11 +534,26 @@ void StartEventScene::ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mPro
 	//カメラの位置を設定する.
 	m_pModelSpriteCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 2.5f });
 
+	//エフェクトを再生.
+	if (!m_pEffect->PlayCheck(m_MissileHandle))
+	{
+		m_MissileHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Missile);
+		//エフェクトの大きさ.
+		float fMissileScale = 0.4f;
+		m_pEffect->SetScale(m_MissileHandle, { fMissileScale, fMissileScale, fMissileScale });
+	}
+
 	float fMoveSpeed = 0.08f;
 	switch (iPhase)
 	{
 	case 0:
 		m_pPlayerModel->AddPos({ fMoveSpeed, fMoveSpeed, 0.0f });
+
+		{
+			D3DXVECTOR3 vPos = m_pPlayerModel->GetPos();
+			vPos.y += 5.0f;
+			m_pEffect->SetLocation(m_MissileHandle, vPos);
+		}
 
 		m_pPlayerModel->RenderModel(mView, mProj);
 
@@ -535,11 +561,23 @@ void StartEventScene::ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mPro
 	case 1:
 		m_pPlayerModel->AddPos({ 0.0f, -fMoveSpeed, 0.0f });
 
+		{
+			D3DXVECTOR3 vPos = m_pPlayerModel->GetPos();
+			vPos.y += 5.0f;
+			m_pEffect->SetLocation(m_MissileHandle, vPos);
+		}
+
 		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
 	case 2:
 		m_pPlayerModel->AddPos({ -fMoveSpeed, fMoveSpeed, 0.0f });
+
+		{
+			D3DXVECTOR3 vPos = m_pPlayerModel->GetPos();
+			vPos.y += 5.0f;
+			m_pEffect->SetLocation(m_MissileHandle, vPos);
+		}
 
 		m_pPlayerModel->RenderModel(mView, mProj);
 
@@ -547,6 +585,12 @@ void StartEventScene::ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mPro
 	case 3:
 		m_fAddY += 0.0008f;
 		m_pPlayerModel->AddPos({ 0.0f, m_fAddY, fMoveSpeed * 4.0f });
+
+		{
+			D3DXVECTOR3 vPos = m_pPlayerModel->GetPos();
+			vPos.y += 5.0f;
+			m_pEffect->SetLocation(m_MissileHandle, vPos);
+		}
 
 		m_pPlayerModel->RenderModel(mView, mProj);
 

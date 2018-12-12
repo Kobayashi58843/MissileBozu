@@ -126,6 +126,7 @@ void StartingScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	if (Singleton<RawInput>().GetInstance().IsLButtonDown())
 	{
 		enNextScene = enSwitchToNextScene::Title;
+
 		//ƒV[ƒ“ˆÚ“®‚ÌSE.
 		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PushButton))
 		{

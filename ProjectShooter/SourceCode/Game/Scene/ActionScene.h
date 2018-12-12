@@ -40,7 +40,6 @@ private:
 
 	/*====/ ƒ‚ƒfƒ‹ŠÖ˜A /====*/
 	Player* m_pPlayer;
-
 	Enemy* m_pEnemy;
 
 	clsDX9Mesh* m_pGround;

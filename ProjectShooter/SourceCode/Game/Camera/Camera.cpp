@@ -1,7 +1,7 @@
 #include"Camera.h"
 
 //注視点からカメラまでの距離.
-const float FOCUSING_SPACE_DISTANCE = 2.0f;
+const float FOCUSING_SPACE_DISTANCE = 5.0f;
 
 //回転速度.
 const float DEGREE = 1.0f;
@@ -12,11 +12,14 @@ const float SCOPE = 4.0f;
 //描画する最大の距離.
 const float LOOK_DISTANCE = 500.0f;
 
-//上下の限界の角度.
-const int MAX_ANGLE_DEGREE = 10;
+//上方向の角度の限界.
+const int MAX_UP_ANGLE_DEGREE = 60;
+
+//下方向の角度の限界.
+const int MAX_DOWN_ANGLE_DEGREE = 45;
 
 //距離の限界.
-const float DISTANCE_MAX = 8.0f;
+const float DISTANCE_MAX = 50.0f;
 
 //当たり判定の大きさ.
 const float RADIUS = 0.2f;
@@ -137,10 +140,14 @@ void Camera::Move(const D3DXVECTOR3 vDif)
 //移動制限.
 void Camera::MoveLimit()
 {
-	float fDistance = D3DXVec3Length(&m_vFocusingSpacePos);
-	float fCamAngleY = atanf(fDistance / m_vFocusingSpacePos.y);
+	//変更前の距離.
+	float fOldDistance = D3DXVec3Length(&m_vFocusingSpacePos);
 
-	if (D3DXToRadian(90) - fabs(fCamAngleY) < D3DXToRadian(MAX_ANGLE_DEGREE))
+	//カメラの角度.
+	float fCamAngleY = atanf(m_vFocusingSpacePos.y);
+
+	if (fCamAngleY < D3DXToRadian(MAX_UP_ANGLE_DEGREE) &&
+		fCamAngleY > D3DXToRadian(-MAX_DOWN_ANGLE_DEGREE))
 	{
 		//注視点空間でのカメラの位置を保存.
 		m_vOldFocusingSpacePos = m_vFocusingSpacePos;
@@ -149,6 +156,21 @@ void Camera::MoveLimit()
 	{
 		//範囲外の場合は前の位置に戻す.
 		m_vFocusingSpacePos.y = m_vOldFocusingSpacePos.y;
+	}
+
+	/*====/ 注視位置とカメラの距離の調整 /====*/
+
+	//変更後の距離.
+	float fDistance = D3DXVec3Length(&m_vFocusingSpacePos);
+
+	D3DXVECTOR3 vCameraPoseZ;
+	vCameraPoseZ = -m_vFocusingSpacePos;
+	D3DXVec3Normalize(&vCameraPoseZ, &vCameraPoseZ);
+
+	//変更前後の距離に差がある場合は調整する.
+	if (fOldDistance != fDistance)
+	{
+		m_vFocusingSpacePos -= (fOldDistance - fDistance) * vCameraPoseZ;
 	}
 }
 

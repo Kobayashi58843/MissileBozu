@@ -19,28 +19,6 @@ Object::~Object()
 //レイと対象のメッシュが衝突しているか.
 bool Object::IsRayHit(clsDX9Mesh* const pTarget)
 {
-	////軸ベクトルは垂直で下向き.
-	//D3DXVECTOR3 vAxis = { 0.0f, -1.0f, 0.0f };
-
-	//CrearVECTOR3(m_vIntersect);
-
-	////距離.
-	//float fDistance = 0.0f;
-
-	////レイとメッシュの当たり判定.
-	//bool bHit = Intersect(vAxis, pTarget, &fDistance, &m_vIntersect);
-
-	//if (bHit)
-	//{
-	//	D3DXVECTOR3 vLength = m_Collision.vCenter - m_vIntersect;
-	//	float fLength = D3DXVec3Length(&vLength);
-
-	//	if (fabs(fLength) > m_Collision.fRadius)
-	//	{
-	//		bHit = false;
-	//	}
-	//}
-
 	//下方向の交点座標.
 	D3DXVECTOR3 vAxis = { 0.0f, -1.0f, 0.0f };
 	float fDistance = 0.0f;
