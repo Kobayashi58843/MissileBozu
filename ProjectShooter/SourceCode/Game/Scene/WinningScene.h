@@ -13,6 +13,8 @@ public:
 private:
 	enum enSprite
 	{
+		enSprite_Text = 0,
+
 		enSprite_Max
 	};
 
@@ -30,6 +32,7 @@ private:
 	clsEffects* m_pEffect;
 	//ハンドル.
 	::Effekseer::Handle m_ExpHandle;
+	::Effekseer::Handle m_MissileHandle;
 
 	/*====/ カメラ関連 /====*/
 	EventCamera* m_pEventCamera;

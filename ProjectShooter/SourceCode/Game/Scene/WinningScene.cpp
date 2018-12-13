@@ -72,6 +72,7 @@ void WinningScene::CreateProduct(const enSwitchToNextScene enNextScene)
 //解放.
 void WinningScene::Release()
 {
+	m_pEffect->Stop(m_MissileHandle);
 	m_pEffect->Stop(m_ExpHandle);
 
 	SAFE_DELETE(m_pEnemyModel);
@@ -169,9 +170,15 @@ void WinningScene::RenderSpriteProduct(const int iRenderLevel)
 	switch (iRenderLevel)
 	{
 	case 0:
+
 		break;
 	case 1:
 		m_pOneFrameSprite->Render();
+
+		if (m_iPhase == 4)
+		{
+			m_vpSprite[enSprite_Text]->Render();
+		}
 
 		break;
 	case MAX_RENDER_LEVEL:
@@ -186,6 +193,30 @@ void WinningScene::CreateSprite()
 {
 	//キャパシティを確定させる.
 	m_vpSprite.reserve(enSprite_Max);
+
+	SPRITE_STATE SpriteData;
+
+	//各スプライトの設定.
+	for (int i = 0; i < enSprite_Max; i++)
+	{
+		switch (i)
+		{
+		case enSprite_Text:
+			SpriteData =
+			{ "Data\\Image\\Win.png"	//ファイルまでのパス.
+			, { 1.0f, 1.0f } };			//元画像を何分割するか.
+
+			break;
+		default:
+			ERR_MSG("Clear::CreateSprite()", "error");
+
+			break;
+		}
+
+		//配列を一つ増やす.
+		m_vpSprite.push_back(new Sprite(SpriteData.vDivisionQuantity.x, SpriteData.vDivisionQuantity.y));
+		m_vpSprite[i]->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, SpriteData.sPath);
+	}
 
 	m_pOneFrameSprite = new DisplayBackBuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
 	m_pOneFrameSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext);
@@ -213,22 +244,45 @@ void WinningScene::UpdateSprite()
 		UpdateSpritePositio(i);
 		UpdateSpriteAnimation(i);
 	}
-
-	//ウインドウの中心.
-	float fWindowWidthCenter = WINDOW_WIDTH / 2.0f;
-	float fWindowHeightCenter = WINDOW_HEIGHT / 2.0f;
-
-	m_pOneFrameSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
 }
 
 //スプライトの位置.
 void WinningScene::UpdateSpritePositio(int iSpriteNo)
 {
+	//ウインドウの中心.
+	float fWindowWidthCenter = WINDOW_WIDTH / 2.0f;
+	float fWindowHeightCenter = WINDOW_HEIGHT / 2.0f;
+
+	//スプライト位置.
+	D3DXVECTOR2 vPosition;
+
+	switch (iSpriteNo)
+	{
+	case enSprite_Text:
+		vPosition.x = fWindowWidthCenter;
+		vPosition.y = fWindowHeightCenter / 2.0f;
+
+		break;
+	}
+
+	m_vpSprite[iSpriteNo]->SetPos(vPosition.x, vPosition.y);
+
+	m_pOneFrameSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
 }
 
 //スプライトのアニメーション.
 void WinningScene::UpdateSpriteAnimation(int iSpriteNo)
 {
+	switch (iSpriteNo)
+	{
+	case enSprite_Text:
+
+		break;
+	default:
+		ERR_MSG("Clear::UpdateSpriteAnimation()", "error");
+
+		break;
+	}
 }
 
 //演出の段階ごとの描画.
@@ -240,23 +294,72 @@ void WinningScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, 
 	//カメラの操作.
 	PhaseCameraControl(iPhase);
 
+	D3DXVECTOR3 vEfcPos = m_pEnemyModel->GetPos();
+	vEfcPos.y += 1.5f;
+
+	const float fRatio = 0.5f;
+	if (m_pEnemyModel->IsAnimationRatioEnd(fRatio))
+	{
+		//アニメーション速度.
+		m_pEnemyModel->SetAnimationSpeed(0);
+	}
+
 	switch (iPhase)
 	{
 	case 0:
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-		m_pPlayerModel->RenderModel(mView, mProj);
-		m_pEnemyModel->RenderModel(mView, mProj);
 
-		m_pSky->Render(mView, mProj);
-		m_pStage->Render(mView, mProj);
+		break;
+	case 1:
+
+		break;
+	case 2:
+
+		break;
+	case 3:
+		if (m_iTime / FPS == COUNT_TIME / 3.0f)
+		{
+			//エフェクトを再生.
+			vEfcPos.x -= 1.0f;
+			vEfcPos.y -= 1.0f;
+			m_ExpHandle = m_pEffect->Play(vEfcPos, clsEffects::enEfcType_Explosion);
+			Singleton<SoundManager>().GetInstance().PlaySE(SoundManager::enSE_Explosion);
+		}
+
+		if (m_iTime / FPS == COUNT_TIME - (COUNT_TIME / 3.0f))
+		{
+			//エフェクトを再生.
+			vEfcPos.x -= 1.0f;
+			vEfcPos.y += 1.0f;
+			m_ExpHandle = m_pEffect->Play(vEfcPos, clsEffects::enEfcType_Explosion);
+			Singleton<SoundManager>().GetInstance().PlaySE(SoundManager::enSE_Explosion);
+		}
+
+		break;
+	case 4:
+		{
+			m_pPlayerModel->AddYaw(15.0f);
+
+			m_pPlayerModel->AddPos({ 0.0f, 0.5f, 0.0f });
+
+			m_pEffect->SetLocation(m_MissileHandle, m_pPlayerModel->GetPos());
+
+			//カメラの注視位置を設定する.
+			D3DXVECTOR3 vLookAt;
+			vLookAt = m_pPlayerModel->GetPos();
+			vLookAt.y += 1.5f;
+			m_pEventCamera->SetLookAt(vLookAt);
+		}
 
 		break;
 	default:
 		break;
 	}
+
+	m_pPlayerModel->RenderModel(mView, mProj);
+	m_pEnemyModel->RenderModel(mView, mProj);
+
+	m_pSky->Render(mView, mProj);
+	m_pStage->Render(mView, mProj);
 
 	//進行.
 	PhaseProgress(iPhase);
@@ -359,6 +462,13 @@ void WinningScene::PhaseInit(const int iPhase)
 		m_pPlayerModel->SetRot({ 0.0f, D3DXToRadian(180), 0.0f });
 		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 20.0f });
 
+		//アニメーションを設定.
+		{
+			m_pEnemyModel->ChangeAnimation(4);
+			const double dHitAnimationSpeed = 0.005;
+			m_pEnemyModel->SetAnimationSpeed(dHitAnimationSpeed);
+		}
+
 		//カメラの注視位置を設定する.
 		vLookAt = m_pEnemyModel->GetPos();
 		vLookAt.y += 1.5f;
@@ -366,6 +476,7 @@ void WinningScene::PhaseInit(const int iPhase)
 
 		//エフェクトを再生.
 		m_ExpHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Explosion);
+		Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Explosion);
 
 		//カメラの位置を設定する.
 		m_pEventCamera->SetPos({ vLookAt.x + 1.0f, vLookAt.y - 1.0f, vLookAt.z - 2.0f });
@@ -379,10 +490,21 @@ void WinningScene::PhaseInit(const int iPhase)
 		m_pPlayerModel->SetRot({ 0.0f, D3DXToRadian(180), 0.0f });
 		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 20.0f });
 
+		//アニメーションを設定.
+		{
+			m_pEnemyModel->ChangeAnimation(4);
+			const double dHitAnimationSpeed = 0.005;
+			m_pEnemyModel->SetAnimationSpeed(dHitAnimationSpeed);
+		}
+
 		//カメラの注視位置を設定する.
 		vLookAt = m_pEnemyModel->GetPos();
 		vLookAt.y += 1.5f;
 		m_pEventCamera->SetLookAt(vLookAt);
+
+		//エフェクトを再生.
+		m_ExpHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Explosion);
+		Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Explosion);
 
 		//カメラの位置を設定する.
 		m_pEventCamera->SetPos({ vLookAt.x - 2.0f, vLookAt.y + 4.0f, vLookAt.z - 6.0f });
@@ -396,10 +518,21 @@ void WinningScene::PhaseInit(const int iPhase)
 		m_pPlayerModel->SetRot({ 0.0f, D3DXToRadian(180), 0.0f });
 		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 20.0f });
 
+		//アニメーションを設定.
+		{
+			m_pEnemyModel->ChangeAnimation(4);
+			const double dHitAnimationSpeed = 0.005;
+			m_pEnemyModel->SetAnimationSpeed(dHitAnimationSpeed);
+		}
+
 		//カメラの注視位置を設定する.
 		vLookAt = m_pEnemyModel->GetPos();
 		vLookAt.y += 1.5f;
 		m_pEventCamera->SetLookAt(vLookAt);
+
+		//エフェクトを再生.
+		m_ExpHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Explosion);
+		Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Explosion);
 
 		//カメラの位置を設定する.
 		m_pEventCamera->SetPos({ vLookAt.x + 2.0f, vLookAt.y + 4.0f, vLookAt.z + 6.0f });
@@ -413,10 +546,21 @@ void WinningScene::PhaseInit(const int iPhase)
 		m_pPlayerModel->SetRot({ D3DXToRadian(60), D3DXToRadian(180), 0.0f });
 		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 20.0f });
 
+		//アニメーションを設定.
+		{
+			m_pEnemyModel->ChangeAnimation(4);
+			const double dHitAnimationSpeed = 0.005;
+			m_pEnemyModel->SetAnimationSpeed(dHitAnimationSpeed);
+		}
+
 		//カメラの注視位置を設定する.
 		vLookAt = m_pEnemyModel->GetPos();
 		vLookAt.y += 1.5f;
 		m_pEventCamera->SetLookAt(vLookAt);
+
+		//エフェクトを再生.
+		m_ExpHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Explosion);
+		Singleton<SoundManager>().GetInstance().PlaySE(SoundManager::enSE_Explosion);
 
 		//カメラの位置を設定する.
 		m_pEventCamera->SetPos({ vLookAt.x - 1.0f, vLookAt.y + 1.0f, vLookAt.z - 8.0f });
@@ -435,8 +579,25 @@ void WinningScene::PhaseInit(const int iPhase)
 		vLookAt.y += 1.5f;
 		m_pEventCamera->SetLookAt(vLookAt);
 
+		//エフェクトを再生.
+		if (!m_pEffect->PlayCheck(m_MissileHandle))
+		{
+			m_MissileHandle = m_pEffect->Play(m_pPlayerModel->GetPos(), clsEffects::enEfcType_Missile);
+			//エフェクトの大きさ.
+			float fMissileScale = 0.2f;
+			m_pEffect->SetScale(m_MissileHandle, { fMissileScale, fMissileScale, fMissileScale });
+
+			D3DXVECTOR3 vRot = { D3DXToRadian(-180), 0.0f, 0.0f };
+			m_pEffect->SetRotation(m_MissileHandle, vRot);
+		}
+
+		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_Fire))
+		{
+			Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Fire);
+		}
+
 		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x + 1.0f, vLookAt.y - 1.0f, vLookAt.z + 4.0f });
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z + 4.0f });
 
 		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
 

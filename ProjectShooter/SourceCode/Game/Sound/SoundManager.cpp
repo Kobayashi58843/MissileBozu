@@ -193,6 +193,10 @@ void SoundManager::LoadSE(const HWND hWnd)
 				sData = { "Data\\Sound\\SE\\System\\Count.mp3", "Count" };
 
 				break;
+			case enSE_Missile:
+				sData = { "Data\\Sound\\SE\\System\\Missile.mp3", "Missile" };
+
+				break;
 			case enSE_Fire:
 				sData = { "Data\\Sound\\SE\\System\\Fire.mp3", "Fire" };
 

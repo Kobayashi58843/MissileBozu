@@ -32,6 +32,7 @@ public:
 		enSE_Cursor = 0,
 		enSE_PushButton,
 		enSE_Count,
+		enSE_Missile,
 		enSE_Fire,
 
 		//プレイヤー用のSE.

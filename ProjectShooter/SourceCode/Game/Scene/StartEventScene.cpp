@@ -329,6 +329,8 @@ void StartEventScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mPro
 				{
 					Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Count);
 				}
+
+				Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Missile);
 			}
 		}
 		else
@@ -346,6 +348,8 @@ void StartEventScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mPro
 				{
 					Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Count);
 				}
+
+				Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Missile);
 			}
 		}
 		else
@@ -363,6 +367,8 @@ void StartEventScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mPro
 				{
 					Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Count);
 				}
+
+				Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Missile);
 			}
 		}
 		else
@@ -457,7 +463,7 @@ void StartEventScene::PhaseProgress(const int iPhase)
 
 		break;
 	case 3:
-		if (m_iTime / FPS >= COUNT_TIME)
+		if (m_iTime / FPS >= COUNT_TIME * 1.5f)
 		{
 			m_iPhase++;
 			m_bWhenProgress = true;
@@ -539,8 +545,11 @@ void StartEventScene::ModelControl(const D3DXMATRIX mView, const D3DXMATRIX mPro
 	{
 		m_MissileHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Missile);
 		//エフェクトの大きさ.
-		float fMissileScale = 0.4f;
+		float fMissileScale = 0.2f;
 		m_pEffect->SetScale(m_MissileHandle, { fMissileScale, fMissileScale, fMissileScale });
+
+		D3DXVECTOR3 vRot = { D3DXToRadian(-180), 0.0f, 0.0f };
+		m_pEffect->SetRotation(m_MissileHandle, vRot);
 	}
 
 	float fMoveSpeed = 0.08f;
