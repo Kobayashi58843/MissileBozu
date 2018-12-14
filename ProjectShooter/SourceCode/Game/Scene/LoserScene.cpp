@@ -6,13 +6,13 @@
 const double ANIMETION_SPEED = 0.01;
 
 //演出の段階の最大数.
-const int MAX_PHASE = 5;
+const int MAX_PHASE = 1;
 
 //フェードの速度.
 const float FADE_SPEED = 0.05f;
 
 //一フェーズの時間.
-const float COUNT_TIME = 1.5f;
+const float COUNT_TIME = 5.0f;
 
 LoserScene::LoserScene(SCENE_NEED_POINTER PointerGroup)
 	: BaseScene(PointerGroup)
@@ -100,7 +100,7 @@ void LoserScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 #endif //#if _DEBUG.
 
 	//BGMをループで再生.
-	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Win);
+	Singleton<SoundManager>().GetInstance().PlayBGM(SoundManager::enBGM_Lose);
 
 	m_iTime++;
 
@@ -113,12 +113,12 @@ void LoserScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	//次のシーンへ.
 	if (m_iPhase >= MAX_PHASE)
 	{
-		enNextScene = enSwitchToNextScene::Clear;
+		enNextScene = enSwitchToNextScene::Continue;
 	}
 
 	if (Singleton<RawInput>().GetInstance().IsLButtonDown())
 	{
-		enNextScene = enSwitchToNextScene::Clear;
+		enNextScene = enSwitchToNextScene::Continue;
 
 		//シーン移動時のSE.
 		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PushButton))
@@ -294,63 +294,11 @@ void LoserScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, co
 	//カメラの操作.
 	PhaseCameraControl(iPhase);
 
-	D3DXVECTOR3 vEfcPos = m_pEnemyModel->GetPos();
-	vEfcPos.y += 1.5f;
-
-	const float fRatio = 0.5f;
-	if (m_pEnemyModel->IsAnimationRatioEnd(fRatio))
-	{
-		//アニメーション速度.
-		m_pEnemyModel->SetAnimationSpeed(0);
-	}
-
 	switch (iPhase)
 	{
 	case 0:
 
 		break;
-	case 1:
-
-		break;
-	case 2:
-
-		break;
-	case 3:
-		if (m_iTime / FPS == COUNT_TIME / 3.0f)
-		{
-			//エフェクトを再生.
-			vEfcPos.x -= 1.0f;
-			vEfcPos.y -= 1.0f;
-			m_ExpHandle = m_pEffect->Play(vEfcPos, clsEffects::enEfcType_Explosion);
-			Singleton<SoundManager>().GetInstance().PlaySE(SoundManager::enSE_Explosion);
-		}
-
-		if (m_iTime / FPS == COUNT_TIME - (COUNT_TIME / 3.0f))
-		{
-			//エフェクトを再生.
-			vEfcPos.x -= 1.0f;
-			vEfcPos.y += 1.0f;
-			m_ExpHandle = m_pEffect->Play(vEfcPos, clsEffects::enEfcType_Explosion);
-			Singleton<SoundManager>().GetInstance().PlaySE(SoundManager::enSE_Explosion);
-		}
-
-		break;
-	case 4:
-	{
-		m_pPlayerModel->AddYaw(15.0f);
-
-		m_pPlayerModel->AddPos({ 0.0f, 0.5f, 0.0f });
-
-		m_pEffect->SetLocation(m_MissileHandle, m_pPlayerModel->GetPos());
-
-		//カメラの注視位置を設定する.
-		D3DXVECTOR3 vLookAt;
-		vLookAt = m_pPlayerModel->GetPos();
-		vLookAt.y += 1.5f;
-		m_pEventCamera->SetLookAt(vLookAt);
-	}
-
-	break;
 	default:
 		break;
 	}
@@ -373,18 +321,6 @@ void LoserScene::PhaseCameraControl(const int iPhase)
 	case 0:
 
 		break;
-	case 1:
-
-		break;
-	case 2:
-
-		break;
-	case 3:
-
-		break;
-	case 4:
-
-		break;
 	default:
 		break;
 	}
@@ -396,38 +332,6 @@ void LoserScene::PhaseProgress(const int iPhase)
 	switch (iPhase)
 	{
 	case 0:
-		if (m_iTime / FPS >= COUNT_TIME)
-		{
-			m_iPhase++;
-			m_bWhenProgress = true;
-		}
-
-		break;
-	case 1:
-		if (m_iTime / FPS >= COUNT_TIME)
-		{
-			m_iPhase++;
-			m_bWhenProgress = true;
-		}
-
-		break;
-	case 2:
-		if (m_iTime / FPS >= COUNT_TIME)
-		{
-			m_iPhase++;
-			m_bWhenProgress = true;
-		}
-
-		break;
-	case 3:
-		if (m_iTime / FPS >= COUNT_TIME)
-		{
-			m_iPhase++;
-			m_bWhenProgress = true;
-		}
-
-		break;
-	case 4:
 		if (m_iTime / FPS >= COUNT_TIME)
 		{
 			m_iPhase++;
@@ -458,146 +362,29 @@ void LoserScene::PhaseInit(const int iPhase)
 	{
 	case 0:
 		//モデルの位置を設定.
-		m_pPlayerModel->SetPos({ 0.0f, 0.0f, -20.0f });
-		m_pPlayerModel->SetRot({ 0.0f, D3DXToRadian(180), 0.0f });
-		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 20.0f });
+		m_pPlayerModel->SetPos({ 1.5f, 0.0f, 0.0f });
+		m_pPlayerModel->SetRot({ 0.0f, D3DXToRadian(80), 0.0f });
+		m_pEnemyModel->SetPos({ -1.5f, 0.0f, 0.0f });
+		m_pEnemyModel->SetRot({ 0.0f, D3DXToRadian(-80), 0.0f });
 
 		//アニメーションを設定.
 		{
-			m_pEnemyModel->ChangeAnimation(4);
-			const double dHitAnimationSpeed = 0.005;
+			double dHitAnimationSpeed = 0.02;
+
+			m_pPlayerModel->ChangeAnimation(4);
+			m_pPlayerModel->SetAnimationSpeed(dHitAnimationSpeed);
+
+			m_pEnemyModel->ChangeAnimation(2);
 			m_pEnemyModel->SetAnimationSpeed(dHitAnimationSpeed);
 		}
 
 		//カメラの注視位置を設定する.
-		vLookAt = m_pEnemyModel->GetPos();
+		CrearVECTOR3(vLookAt);
 		vLookAt.y += 1.5f;
 		m_pEventCamera->SetLookAt(vLookAt);
 
-		//エフェクトを再生.
-		m_ExpHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Explosion);
-		Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Explosion);
-
 		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x + 1.0f, vLookAt.y - 1.0f, vLookAt.z - 2.0f });
-
-		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
-
-		break;
-	case 1:
-		//モデルの位置を設定.
-		m_pPlayerModel->SetPos({ 0.0f, 0.0f, -20.0f });
-		m_pPlayerModel->SetRot({ 0.0f, D3DXToRadian(180), 0.0f });
-		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 20.0f });
-
-		//アニメーションを設定.
-		{
-			m_pEnemyModel->ChangeAnimation(4);
-			const double dHitAnimationSpeed = 0.005;
-			m_pEnemyModel->SetAnimationSpeed(dHitAnimationSpeed);
-		}
-
-		//カメラの注視位置を設定する.
-		vLookAt = m_pEnemyModel->GetPos();
-		vLookAt.y += 1.5f;
-		m_pEventCamera->SetLookAt(vLookAt);
-
-		//エフェクトを再生.
-		m_ExpHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Explosion);
-		Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Explosion);
-
-		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x - 2.0f, vLookAt.y + 4.0f, vLookAt.z - 6.0f });
-
-		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
-
-		break;
-	case 2:
-		//モデルの位置を設定.
-		m_pPlayerModel->SetPos({ 0.0f, 0.0f, -20.0f });
-		m_pPlayerModel->SetRot({ 0.0f, D3DXToRadian(180), 0.0f });
-		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 20.0f });
-
-		//アニメーションを設定.
-		{
-			m_pEnemyModel->ChangeAnimation(4);
-			const double dHitAnimationSpeed = 0.005;
-			m_pEnemyModel->SetAnimationSpeed(dHitAnimationSpeed);
-		}
-
-		//カメラの注視位置を設定する.
-		vLookAt = m_pEnemyModel->GetPos();
-		vLookAt.y += 1.5f;
-		m_pEventCamera->SetLookAt(vLookAt);
-
-		//エフェクトを再生.
-		m_ExpHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Explosion);
-		Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Explosion);
-
-		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x + 2.0f, vLookAt.y + 4.0f, vLookAt.z + 6.0f });
-
-		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
-
-		break;
-	case 3:
-		//モデルの位置を設定.
-		m_pPlayerModel->SetPos({ 0.0f, 0.0f, 0.0f });
-		m_pPlayerModel->SetRot({ D3DXToRadian(60), D3DXToRadian(180), 0.0f });
-		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 20.0f });
-
-		//アニメーションを設定.
-		{
-			m_pEnemyModel->ChangeAnimation(4);
-			const double dHitAnimationSpeed = 0.005;
-			m_pEnemyModel->SetAnimationSpeed(dHitAnimationSpeed);
-		}
-
-		//カメラの注視位置を設定する.
-		vLookAt = m_pEnemyModel->GetPos();
-		vLookAt.y += 1.5f;
-		m_pEventCamera->SetLookAt(vLookAt);
-
-		//エフェクトを再生.
-		m_ExpHandle = m_pEffect->Play(vLookAt, clsEffects::enEfcType_Explosion);
-		Singleton<SoundManager>().GetInstance().PlaySE(SoundManager::enSE_Explosion);
-
-		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x - 1.0f, vLookAt.y + 1.0f, vLookAt.z - 8.0f });
-
-		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
-
-		break;
-	case 4:
-		//モデルの位置を設定.
-		m_pPlayerModel->SetPos({ 0.0f, 0.0f, -20.0f });
-		m_pPlayerModel->SetRot({ 0.0f, D3DXToRadian(180), 0.0f });
-		m_pEnemyModel->SetPos({ 0.0f, 0.0f, 20.0f });
-
-		//カメラの注視位置を設定する.
-		vLookAt = m_pPlayerModel->GetPos();
-		vLookAt.y += 1.5f;
-		m_pEventCamera->SetLookAt(vLookAt);
-
-		//エフェクトを再生.
-		if (!m_pEffect->PlayCheck(m_MissileHandle))
-		{
-			m_MissileHandle = m_pEffect->Play(m_pPlayerModel->GetPos(), clsEffects::enEfcType_Missile);
-			//エフェクトの大きさ.
-			float fMissileScale = 0.2f;
-			m_pEffect->SetScale(m_MissileHandle, { fMissileScale, fMissileScale, fMissileScale });
-
-			D3DXVECTOR3 vRot = { D3DXToRadian(-180), 0.0f, 0.0f };
-			m_pEffect->SetRotation(m_MissileHandle, vRot);
-		}
-
-		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_Fire))
-		{
-			Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Fire);
-		}
-
-		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z + 4.0f });
+		m_pEventCamera->SetPos({ vLookAt.x - 2.0f, vLookAt.y + 2.0f, vLookAt.z - 4.0f });
 
 		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
 

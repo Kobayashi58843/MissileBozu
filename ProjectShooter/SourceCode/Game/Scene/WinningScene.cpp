@@ -385,15 +385,15 @@ void WinningScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, 
 						m_pPlayerModel->SetPos({ fMoveSpeed, m_pPlayerModel->GetPos().y, m_pPlayerModel->GetPos().z });
 					}
 				
-					//float fRotSpeed = 0.025f;
-					//if (m_pEventCamera->GetRot().y >= 0.0f)
-					//{
-					//	m_pEventCamera->AddRot({ 0.0f, -fRotSpeed, 0.0f });
-					//}
-					//else
-					//{
-					//	m_pEventCamera->AddRot({ 0.0f, fRotSpeed, 0.0f });
-					//}
+					float fRotSpeed = 0.005f;
+					if (m_pEventCamera->GetRot().y >= 0.0f)
+					{
+						m_pEventCamera->AddRot({ 0.0f, -fRotSpeed, 0.0f });
+					}
+					else
+					{
+						m_pEventCamera->AddRot({ 0.0f, fRotSpeed, 0.0f });
+					}
 				}
 			}
 		}
