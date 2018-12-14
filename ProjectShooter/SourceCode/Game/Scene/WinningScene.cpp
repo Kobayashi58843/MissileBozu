@@ -337,19 +337,66 @@ void WinningScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, 
 		break;
 	case 4:
 		{
-			m_pPlayerModel->AddYaw(15.0f);
+			if (m_iTime / FPS >= COUNT_TIME / 2.0f)
+			{
+				m_pPlayerModel->AddYaw(15.0f);
 
-			m_pPlayerModel->AddPos({ 0.0f, 0.5f, 0.0f });
+				m_pPlayerModel->SetPos({ 0.0f, m_pPlayerModel->GetPos().y, -20.0f });
+				m_pPlayerModel->AddPos({ 0.0f, 0.5f, 0.0f });
 
-			m_pEffect->SetLocation(m_MissileHandle, m_pPlayerModel->GetPos());
+				m_pEffect->SetLocation(m_MissileHandle, m_pPlayerModel->GetPos());
 
-			//カメラの注視位置を設定する.
-			D3DXVECTOR3 vLookAt;
-			vLookAt = m_pPlayerModel->GetPos();
-			vLookAt.y += 1.5f;
-			m_pEventCamera->SetLookAt(vLookAt);
+				//カメラの注視位置を設定する.
+				D3DXVECTOR3 vLookAt;
+				vLookAt = m_pPlayerModel->GetPos();
+				vLookAt.y += 1.5f;
+				m_pEventCamera->SetLookAt(vLookAt);
+
+				m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
+
+				//エフェクトを再生.
+				if (!m_pEffect->PlayCheck(m_MissileHandle))
+				{
+					m_MissileHandle = m_pEffect->Play(m_pPlayerModel->GetPos(), clsEffects::enEfcType_Missile);
+					//エフェクトの大きさ.
+					float fMissileScale = 0.2f;
+					m_pEffect->SetScale(m_MissileHandle, { fMissileScale, fMissileScale, fMissileScale });
+
+					D3DXVECTOR3 vRot = { D3DXToRadian(-180), 0.0f, 0.0f };
+					m_pEffect->SetRotation(m_MissileHandle, vRot);
+				}
+
+				if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_Fire))
+				{
+					Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Fire);
+				}
+			}
+			else
+			{
+				if (m_iTime % 2 == 0)
+				{
+					float fMoveSpeed = 0.005f;
+					if (m_pPlayerModel->GetPos().x >= 0.0f)
+					{
+						m_pPlayerModel->SetPos({ -fMoveSpeed, m_pPlayerModel->GetPos().y, m_pPlayerModel->GetPos().z });
+					}
+					else
+					{
+						m_pPlayerModel->SetPos({ fMoveSpeed, m_pPlayerModel->GetPos().y, m_pPlayerModel->GetPos().z });
+					}
+				
+					//float fRotSpeed = 0.025f;
+					//if (m_pEventCamera->GetRot().y >= 0.0f)
+					//{
+					//	m_pEventCamera->AddRot({ 0.0f, -fRotSpeed, 0.0f });
+					//}
+					//else
+					//{
+					//	m_pEventCamera->AddRot({ 0.0f, fRotSpeed, 0.0f });
+					//}
+				}
+			}
 		}
-
 		break;
 	default:
 		break;
@@ -428,7 +475,7 @@ void WinningScene::PhaseProgress(const int iPhase)
 
 		break;
 	case 4:
-		if (m_iTime / FPS >= COUNT_TIME)
+		if (m_pPlayerModel->GetPos().y >= 40.0f)
 		{
 			m_iPhase++;
 			m_bWhenProgress = true;
@@ -578,23 +625,6 @@ void WinningScene::PhaseInit(const int iPhase)
 		vLookAt = m_pPlayerModel->GetPos();
 		vLookAt.y += 1.5f;
 		m_pEventCamera->SetLookAt(vLookAt);
-
-		//エフェクトを再生.
-		if (!m_pEffect->PlayCheck(m_MissileHandle))
-		{
-			m_MissileHandle = m_pEffect->Play(m_pPlayerModel->GetPos(), clsEffects::enEfcType_Missile);
-			//エフェクトの大きさ.
-			float fMissileScale = 0.2f;
-			m_pEffect->SetScale(m_MissileHandle, { fMissileScale, fMissileScale, fMissileScale });
-
-			D3DXVECTOR3 vRot = { D3DXToRadian(-180), 0.0f, 0.0f };
-			m_pEffect->SetRotation(m_MissileHandle, vRot);
-		}
-
-		if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_Fire))
-		{
-			Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_Fire);
-		}
 
 		//カメラの位置を設定する.
 		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z + 4.0f });
