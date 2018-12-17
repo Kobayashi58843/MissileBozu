@@ -18,6 +18,8 @@ private:
 		enSprite_ReturnButton,
 		enSprite_ReturnButtonText,
 		enSprite_Cursor,
+		enSprite_Cupid1,
+		enSprite_Cupid2,
 
 		enSprite_Max
 	};
@@ -30,7 +32,28 @@ private:
 
 	void RenderSpriteProduct(const int iRenderLevel);
 
+	/*====/ カメラ関連 /====*/
+	EventCamera* m_pEventCamera;
+
+	/*====/ モデル関連 /====*/
+	EventModel* m_pPlayerModel;
+
 	/*====/ スプライト関連 /====*/
+	DisplayBackBuffer*	m_pOneFrameSprite;
+	BackBuffer*			m_pOneFrameBuff;
+
+	TransitionsSprite*	m_pLightSprite;
+	Sprite*				m_pLightMaskSprite;
+	BackBuffer*			m_pLightMaskBuffer;
+
+	//演出の段階.
+	int m_iPhase;
+
+	//演出が進んだタイミング用.
+	bool m_bWhenProgress;
+
+	float m_fCupidAddPos;
+
 	//カーソルのアニメーション用のカウント.
 	int m_iCursorAnimationCount;
 
@@ -48,6 +71,21 @@ private:
 
 	//スプライトのアニメーション.
 	void UpdateSpriteAnimation(int iSpriteNo);
+
+	//演出の段階ごとの描画.
+	void PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, const int iPhase);
+
+	//演出の段階ごとのカメラ操作.
+	void PhaseCameraControl(const int iPhase);
+
+	//演出の各段階の進行.
+	void PhaseProgress(const int iPhase);
+
+	//演出の各段階の初期化.
+	void PhaseInit(const int iPhase);
+
+	//スプライトのマスクの描画.
+	void RenderLightMaskBuffer();
 
 #if _DEBUG
 

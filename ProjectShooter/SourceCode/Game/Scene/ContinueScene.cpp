@@ -44,10 +44,24 @@ void ContinueScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 		if (IsHittingOfSprite(enSprite_Cursor, enSprite_Yes))
 		{
 			enNextScene = enSwitchToNextScene::Action;
+
+			//シーン移動時のSE.
+			if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PushButton))
+			{
+				//SEを再生.
+				Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_PushButton);
+			}
 		}
 		else if(IsHittingOfSprite(enSprite_Cursor, enSprite_No))
 		{
 			enNextScene = enSwitchToNextScene::Over;
+
+			//シーン移動時のSE.
+			if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PushButton))
+			{
+				//SEを再生.
+				Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_PushButton);
+			}
 		}
 	}
 }

@@ -14,6 +14,7 @@ private:
 	enum enSprite
 	{
 		enSprite_Text = 0,
+		enSprite_BackGround,
 
 		enSprite_Max
 	};
@@ -28,25 +29,19 @@ private:
 
 	int m_iTime;
 
-	/*====/ エフェクト関連 /====*/
-	clsEffects* m_pEffect;
-	//ハンドル.
-	::Effekseer::Handle m_ExpHandle;
-	::Effekseer::Handle m_MissileHandle;
-
 	/*====/ カメラ関連 /====*/
 	EventCamera* m_pEventCamera;
 
 	/*====/ モデル関連 /====*/
 	EventModel* m_pPlayerModel;
-	EventModel* m_pEnemyModel;
-
-	clsDX9Mesh* m_pSky;
-	clsDX9Mesh* m_pStage;
 
 	/*====/ スプライト関連 /====*/
 	DisplayBackBuffer*	m_pOneFrameSprite;
 	BackBuffer*			m_pOneFrameBuff;
+
+	TransitionsSprite*	m_pLightSprite;
+	Sprite*				m_pLightMaskSprite;
+	BackBuffer*			m_pLightMaskBuffer;
 
 	//演出の段階.
 	int m_iPhase;
@@ -80,6 +75,9 @@ private:
 
 	//演出の各段階の初期化.
 	void PhaseInit(const int iPhase);
+
+	//スプライトのマスクの描画.
+	void RenderLightMaskBuffer();
 
 #if _DEBUG
 

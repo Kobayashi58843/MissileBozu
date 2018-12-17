@@ -53,7 +53,7 @@ float4 PS_Main(VS_OUT input) : SV_Target
 	float4 MaskColor = g_Mask.Sample(g_Sampler, input.UV);
 	float fGrayScale = (((MaskColor.r + MaskColor.g + MaskColor.b) / 3) * MaskColor.a) * 3;
 
-	OutColor.a = ((fGrayScale * g_fAlpha) + g_fAlpha) * OutColor.a;
+	OutColor.a = (((fGrayScale * g_fAlpha) + g_fAlpha) * OutColor.a) * MaskColor.a;
 
 	return OutColor;
 }

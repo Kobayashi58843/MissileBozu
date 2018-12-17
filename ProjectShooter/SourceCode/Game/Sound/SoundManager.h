@@ -6,7 +6,7 @@
 const int DUPLICABLE_MAX = 2;
 
 //BGM‚Ì‰¹—Ê.
-const int BGM_VOLUME = 600;
+const int BGM_VOLUME = 800;
 
 class SoundManager
 {

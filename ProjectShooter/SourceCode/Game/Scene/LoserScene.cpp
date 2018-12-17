@@ -21,9 +21,6 @@ LoserScene::LoserScene(SCENE_NEED_POINTER PointerGroup)
 	, m_pOneFrameBuff(nullptr)
 	, m_pEventCamera(nullptr)
 	, m_pPlayerModel(nullptr)
-	, m_pEnemyModel(nullptr)
-	, m_pSky(nullptr)
-	, m_pStage(nullptr)
 	, m_iPhase(0)
 	, m_bWhenProgress(true)
 {
@@ -32,15 +29,38 @@ LoserScene::LoserScene(SCENE_NEED_POINTER PointerGroup)
 
 	m_pOneFrameBuff = new BackBuffer(m_SceneNeedPointer.pDevice, static_cast<UINT>(WINDOW_WIDTH), static_cast<UINT>(WINDOW_HEIGHT));
 
-	m_pEffect = clsEffects::GetInstance();
+	/*====/ フェード用スプライト関連 /====*/
+	m_pLightMaskBuffer = new BackBuffer(m_SceneNeedPointer.pDevice, static_cast<UINT>(WINDOW_WIDTH), static_cast<UINT>(WINDOW_HEIGHT));
 
-	//起動後1回目のエフェクトが再生されないためその対応として1回再生しておく.
-	m_ExpHandle = m_pEffect->Play({ 0.0f, 0.0f, 0.0f }, clsEffects::enEfcType_Explosion);
-	m_pEffect->Stop(m_ExpHandle);
+	D3DXVECTOR2 vDivisionQuantity = { 1.0f, 1.0f };
+	m_pLightSprite = new TransitionsSprite(vDivisionQuantity.x, vDivisionQuantity.y);
+	m_pLightSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\White.jpg");
+	m_pLightSprite->SetMaskTexture(m_pLightMaskBuffer->GetShaderResourceView());
+
+	m_pLightMaskSprite = new Sprite(vDivisionQuantity.x, vDivisionQuantity.y);
+	m_pLightMaskSprite->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, "Data\\Image\\Light.png");
+
+	//位置をウインドウの中心に設定.
+	float fWindowWidthCenter = WINDOW_WIDTH / 2.0f;
+	float fWindowHeightCenter = WINDOW_HEIGHT / 2.0f;
+	m_pLightSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
+	m_pLightMaskSprite->SetPos(fWindowWidthCenter, fWindowHeightCenter);
+
+	//はじめは非表示に設定しておく.
+	m_pLightSprite->SetDispFlg(true);
+
+	//透過値を0にする.
+	m_pLightSprite->SetAlpha(0.25f);
 }
 
 LoserScene::~LoserScene()
 {
+	SAFE_DELETE(m_pLightSprite);
+
+	SAFE_DELETE(m_pLightMaskSprite);
+
+	SAFE_DELETE(m_pLightMaskBuffer);
+
 	Release();
 }
 
@@ -54,32 +74,14 @@ void LoserScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	m_pEventCamera = new EventCamera(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//スキンモデルの作成.
-	m_pPlayerModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Player), 0.0005f, ANIMETION_SPEED);
+	m_pPlayerModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Player), 0.001f, ANIMETION_SPEED);
 	m_pPlayerModel->ChangeAnimation(1);
-
-	m_pEnemyModel = new EventModel(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Enemy), 0.08f, ANIMETION_SPEED);
-	m_pEnemyModel->ChangeAnimation(5);
-
-	m_pSky = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_SkyBox);
-	m_pSky->SetPos({ 0.0f, 0.0f, 0.0f });
-	m_pSky->SetScale(32.0f);
-
-	m_pStage = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_Ground);
-	m_pStage->SetPos({ 0.0f, -1.5f, 0.0f });
-	m_pStage->SetScale(30.0f);
 }
 
 //解放.
 void LoserScene::Release()
 {
-	m_pEffect->Stop(m_MissileHandle);
-	m_pEffect->Stop(m_ExpHandle);
-
-	SAFE_DELETE(m_pEnemyModel);
 	SAFE_DELETE(m_pPlayerModel);
-
-	m_pStage = nullptr;
-	m_pSky = nullptr;
 
 	SAFE_DELETE(m_pEventCamera);
 
@@ -151,9 +153,6 @@ void LoserScene::RenderModelProduct(const int iRenderLevel)
 		//演出の段階ごとの描画.
 		PhaseDrawing(mView, mProj, m_iPhase);
 
-		//エフェクトの描画.
-		clsEffects::GetInstance()->Render(mView, mProj, m_pEventCamera->GetPos());
-
 		//レンダーターゲットを元に戻す.
 		m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &m_SceneNeedPointer.pBackBuffer_RTV, m_SceneNeedPointer.pBackBuffer_DSV);
 	}
@@ -170,18 +169,20 @@ void LoserScene::RenderSpriteProduct(const int iRenderLevel)
 	switch (iRenderLevel)
 	{
 	case 0:
+		m_vpSprite[enSprite_BackGround]->Render();
+
+		RenderLightMaskBuffer();
+		m_pLightSprite->Render();
 
 		break;
 	case 1:
 		m_pOneFrameSprite->Render();
 
-		if (m_iPhase == 4)
-		{
-			m_vpSprite[enSprite_Text]->Render();
-		}
+		m_vpSprite[enSprite_Text]->Render();
 
 		break;
 	case MAX_RENDER_LEVEL:
+
 		break;
 	default:
 		break;
@@ -203,8 +204,13 @@ void LoserScene::CreateSprite()
 		{
 		case enSprite_Text:
 			SpriteData =
-			{ "Data\\Image\\Win.png"	//ファイルまでのパス.
+			{ "Data\\Image\\Lose.png"	//ファイルまでのパス.
 			, { 1.0f, 1.0f } };			//元画像を何分割するか.
+
+			break;
+		case enSprite_BackGround:
+			SpriteData =
+			{ "Data\\Image\\Fade.jpg", { 1.0f, 1.0f } };
 
 			break;
 		default:
@@ -263,6 +269,11 @@ void LoserScene::UpdateSpritePositio(int iSpriteNo)
 		vPosition.y = fWindowHeightCenter / 2.0f;
 
 		break;
+	case enSprite_BackGround:
+		vPosition.x = fWindowWidthCenter;
+		vPosition.y = fWindowHeightCenter;
+
+		break;
 	}
 
 	m_vpSprite[iSpriteNo]->SetPos(vPosition.x, vPosition.y);
@@ -276,6 +287,9 @@ void LoserScene::UpdateSpriteAnimation(int iSpriteNo)
 	switch (iSpriteNo)
 	{
 	case enSprite_Text:
+
+		break;
+	case enSprite_BackGround:
 
 		break;
 	default:
@@ -304,10 +318,6 @@ void LoserScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, co
 	}
 
 	m_pPlayerModel->RenderModel(mView, mProj);
-	m_pEnemyModel->RenderModel(mView, mProj);
-
-	m_pSky->Render(mView, mProj);
-	m_pStage->Render(mView, mProj);
 
 	//進行.
 	PhaseProgress(iPhase);
@@ -362,10 +372,8 @@ void LoserScene::PhaseInit(const int iPhase)
 	{
 	case 0:
 		//モデルの位置を設定.
-		m_pPlayerModel->SetPos({ 1.5f, 0.0f, 0.0f });
-		m_pPlayerModel->SetRot({ 0.0f, D3DXToRadian(80), 0.0f });
-		m_pEnemyModel->SetPos({ -1.5f, 0.0f, 0.0f });
-		m_pEnemyModel->SetRot({ 0.0f, D3DXToRadian(-80), 0.0f });
+		m_pPlayerModel->SetPos({ 0.0f, 0.0f, 0.0f });
+		m_pPlayerModel->SetRot({ 0.0f, 0.0f, 0.0f });
 
 		//アニメーションを設定.
 		{
@@ -373,9 +381,6 @@ void LoserScene::PhaseInit(const int iPhase)
 
 			m_pPlayerModel->ChangeAnimation(4);
 			m_pPlayerModel->SetAnimationSpeed(dHitAnimationSpeed);
-
-			m_pEnemyModel->ChangeAnimation(2);
-			m_pEnemyModel->SetAnimationSpeed(dHitAnimationSpeed);
 		}
 
 		//カメラの注視位置を設定する.
@@ -384,7 +389,7 @@ void LoserScene::PhaseInit(const int iPhase)
 		m_pEventCamera->SetLookAt(vLookAt);
 
 		//カメラの位置を設定する.
-		m_pEventCamera->SetPos({ vLookAt.x - 2.0f, vLookAt.y + 2.0f, vLookAt.z - 4.0f });
+		m_pEventCamera->SetPos({ vLookAt.x, vLookAt.y, vLookAt.z - 8.0f });
 
 		m_pEventCamera->SetRot({ 0.0f, 0.0f, 0.0f });
 
@@ -394,6 +399,26 @@ void LoserScene::PhaseInit(const int iPhase)
 	}
 
 	m_bWhenProgress = false;
+}
+
+//スプライトのマスクの描画.
+void LoserScene::RenderLightMaskBuffer()
+{
+	//レンダーターゲットをフェード用画像に使うマスク用バッファに変える.
+	ID3D11RenderTargetView* pRTV = m_pLightMaskBuffer->GetRenderTargetView();
+	m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &pRTV, m_SceneNeedPointer.pBackBuffer_DSV);
+
+	//画面のクリア.
+	const float fClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	m_SceneNeedPointer.pContext->ClearRenderTargetView(m_pLightMaskBuffer->GetRenderTargetView(), fClearColor);
+	m_SceneNeedPointer.pContext->ClearDepthStencilView(m_SceneNeedPointer.pBackBuffer_DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	//ルール画像を描画する.
+	m_pLightMaskSprite->Render();
+
+	//レンダーターゲットを元に戻す.
+	pRTV = m_SceneNeedPointer.pBackBuffer_RTV;
+	m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &pRTV, m_SceneNeedPointer.pBackBuffer_DSV);
 }
 
 #if _DEBUG
@@ -413,9 +438,6 @@ void LoserScene::RenderDebugText()
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 2));
 
 	sprintf_s(cStrDbgTxt, "Phase : [%i]", m_iPhase);
-	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 3));
-
-	sprintf_s(cStrDbgTxt, "SkyPos : ( %f, &f, %f )", m_pSky->GetPos().x, m_pSky->GetPos().y, m_pSky->GetPos().z);
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 3));
 }
 
