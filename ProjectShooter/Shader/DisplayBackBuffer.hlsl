@@ -50,7 +50,6 @@ VS_OUT VS(float4 Pos	:	POSITION,
 float4 PS(VS_OUT input) : SV_Target
 {
 	float4 OutColor = g_DispTex.Sample(g_Sampler, input.UV);
-	OutColor.a = 1.0f;
 
 	return OutColor;
 }

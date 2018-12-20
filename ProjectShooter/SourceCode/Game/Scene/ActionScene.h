@@ -35,17 +35,15 @@ private:
 	/*====/ カメラ関連 /====*/
 	Camera* m_pCamera;
 
-	float m_fOldCameraDistance;
-
 	//カメラの操作.
 	void ControlCameraMove();
 
 	/*====/ モデル関連 /====*/
 	Player* m_pPlayer;
-
 	Enemy* m_pEnemy;
 
 	clsDX9Mesh* m_pGround;
+	clsDX9Mesh* m_pSky;
 
 	BulletManager* m_pBulletManager;
 

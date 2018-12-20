@@ -98,6 +98,12 @@ public:
 		m_fDisplaceHorizontally = fDisplace;
 	}
 
+	//注視位置からの距離.
+	float GetDistance() const
+	{
+		return D3DXVec3Length(&m_vFocusingSpacePos);
+	}
+
 	//レイとメッシュの衝突時.
 	void RayHitToMesh(clsDX9Mesh* const pTarget);
 
@@ -131,6 +137,9 @@ private:
 
 	//前の注視点空間でのカメラの位置.
 	D3DXVECTOR3 m_vOldFocusingSpacePos;
+
+	//前フレームのワールド空間での位置.
+	D3DXVECTOR3 m_vOldPos;
 
 	//横にずらす.
 	float m_fDisplaceHorizontally;

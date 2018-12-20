@@ -209,6 +209,12 @@
     <ClInclude Include="SourceCode\Game\Model\Character\Event\EventModel.h">
       <Filter>ソース ファイル\Game\Model\Character\Event</Filter>
     </ClInclude>
+    <ClInclude Include="SourceCode\Game\Camera\EventCamera.h">
+      <Filter>ソース ファイル\Game\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceCode\Game\Sprite\TitleBackgroundSprite.h">
+      <Filter>ソース ファイル\Game\Sprite</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SourceCode\Main.cpp">
@@ -343,6 +349,12 @@
     <ClCompile Include="SourceCode\Game\Model\Character\Event\EventModel.cpp">
       <Filter>ソース ファイル\Game\Model\Character\Event</Filter>
     </ClCompile>
+    <ClCompile Include="SourceCode\Game\Camera\EventCamera.cpp">
+      <Filter>ソース ファイル\Game\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceCode\Game\Sprite\TitleBackgroundSprite.cpp">
+      <Filter>ソース ファイル\Game\Sprite</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\BlurFilter.hlsl">
@@ -382,6 +394,9 @@
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
     <FxCompile Include="Shader\TransitionsSprite.hlsl">
+      <Filter>シェーダーファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\TitleBackgroundSprite.hlsl">
       <Filter>シェーダーファイル</Filter>
     </FxCompile>
   </ItemGroup>

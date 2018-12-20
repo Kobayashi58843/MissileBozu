@@ -47,9 +47,13 @@ public:
 		m_vRot.z += static_cast<float>D3DXToRadian(fDegree);
 	}
 
-	D3DXVECTOR3 GetRayIntersect() const
+	D3DXVECTOR3 GetUpperRayIntersect() const
 	{
-		return m_vIntersect;
+		return m_vUpperIntersect;
+	}
+	D3DXVECTOR3 GetUnderRayIntersect() const
+	{
+		return m_vUnderIntersect;
 	}
 
 protected:
@@ -70,16 +74,17 @@ protected:
 
 private:
 	//レイの交差座標.
-	D3DXVECTOR3 m_vIntersect;
+	D3DXVECTOR3 m_vUpperIntersect;
+	D3DXVECTOR3 m_vUnderIntersect;
 
 	//レイとメッシュの当たり判定.
-	bool Intersect(const D3DXVECTOR3 vAxis, clsDX9Mesh* const pTarget, float* pfDistance, D3DXVECTOR3* pvIntersect);
+	bool Intersect(const D3DXVECTOR3 vAxis, clsDX9Mesh* const pTarget, float* pDistance, D3DXVECTOR3* pIntersect);
 
 	//交差位置のポリゴンの頂点を見つける.
 	HRESULT FindVecticesOnPoly(const LPD3DXMESH pTarget, const DWORD dwPolyIndex, D3DXVECTOR3* pVecVertices);
 
-	//壁の当たり判定間連.
-	void PrtWall(clsDX9Mesh* const pWall, bool* bHit);
+	//当たり判定間連.
+	void HitCheckMeshByRay(clsDX9Mesh* const pWall, bool* bHit);
 
 	//回転値調整.
 	void dirOverGuard(float* fYaw);

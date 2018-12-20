@@ -62,7 +62,8 @@ void ModelResource::ReleaceModelAll()
 void ModelResource::CreateStaticModelAll(HWND hWnd, ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
 	InitStaticModel(hWnd, pDevice, pContext);
-	CreateStaticModel("Data\\Ground\\Stage.X", enStaticModel_Ground);
+	CreateStaticModel("Data\\Stage\\stage\\stage.x", enStaticModel_Ground);
+	CreateStaticModel("Data\\Stage\\skydome\\skydome.X", enStaticModel_SkyBox);
 	CreateStaticModel("Data\\Collision\\Sphere.X", enStaticModel_Shpere);
 }
 

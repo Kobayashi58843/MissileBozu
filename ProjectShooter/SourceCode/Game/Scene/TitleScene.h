@@ -14,6 +14,7 @@ private:
 	enum enSprite
 	{
 		enSprite_BackGround = 0,
+		enSprite_BackGroundSub,
 		enSprite_Logo,
 		enSprite_StartButton,
 		enSprite_EndButton,
@@ -32,9 +33,26 @@ private:
 
 	void RenderSpriteProduct(const int iRenderLevel);
 
+	/*====/ カメラ関連 /====*/
+	EventCamera* m_pEventCamera;
+
+	/*====/ モデル関連 /====*/
+	EventModel* m_pPlayerModel;
+	EventModel* m_pEnemyModel;
+
 	/*====/ スプライト関連 /====*/
 	//カーソルのアニメーション用のカウント.
 	int m_iCursorAnimationCount;
+
+	//背景用のバッファ.
+	BackBuffer* m_pTitleBackMainBuff;
+	BackBuffer* m_pTitleBackSubBuff;
+
+	//背景画像.
+	TitleBackgroundSprite* m_pBackGroundSprite;
+
+	//ゲーム終了.
+	bool m_bEndGameFlg;
 
 	//スプライトの作成.
 	void CreateSprite();
@@ -50,6 +68,10 @@ private:
 
 	//スプライトのアニメーション.
 	void UpdateSpriteAnimation(int iSpriteNo);
+
+	//タイトルの背景用のバッファを描画.
+	void RenderBackGroundBuffMain();
+	void RenderBackGroundBuffSub();
 
 	/*====/ シーン変更関連 /====*/
 	//シーン変更.

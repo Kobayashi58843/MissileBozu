@@ -6,17 +6,22 @@
 const int DUPLICABLE_MAX = 2;
 
 //BGMの音量.
-const int BGM_VOLUME = 600;
+const int BGM_VOLUME = 800;
 
 class SoundManager
 {
 public:
 	enum enBGM
 	{
-		enBGM_Title = 0,
+		enBGM_Starting = 0,
+		enBGM_Title,
+		enBGM_StartEvent,
 		enBGM_Action,
-		enBGM_Over,
+		enBGM_Win,
 		enBGM_Clear,
+		enBGM_Lose,
+		enBGM_Continue,
+		enBGM_Over,
 
 		enBGM_Max,
 	};
@@ -26,6 +31,9 @@ public:
 		//カーソルとボタン選択時のSE.
 		enSE_Cursor = 0,
 		enSE_PushButton,
+		enSE_Count,
+		enSE_Missile,
+		enSE_Fire,
 
 		//プレイヤー用のSE.
 		enSE_PlayerDamage,
@@ -44,6 +52,8 @@ public:
 		enSE_EnemyAttack,
 		enSE_EnemyAttackVoice,
 		enSE_EnemyGuard,
+		enSE_EnemyFall,
+		enSE_EnemyFallVoice,
 
 		enSE_Explosion,
 
@@ -73,6 +83,12 @@ public:
 		m_pBGM[Index]->Stop();
 	}
 
+	//BGMの音量設定.
+	void SetBGMVolume(const enSE Index, const int iVolume)
+	{
+		m_pBGM[Index]->SetVolume(iVolume);
+	}
+
 	//SEをはじめから再生.
 	void PlaySE(const enSE Index, const int iVolume = 1000);
 
@@ -84,6 +100,9 @@ public:
 
 	//SEの1つ目が停止中か確認する.
 	bool IsStoppedFirstSE(const enSE Index);
+
+	//SEの音量設定.
+	void SetSEVolume(const enSE Index, const int iVolume);
 
 	//全サウンドを停止する.
 	void StopSound();

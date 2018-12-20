@@ -141,9 +141,14 @@ private:
 	LPD3DXMESH	m_pMesh;		//メッシュオブジェクト.
 	LPD3DXMESH	m_pMeshForRay;	//レイとメッシュ用.
 
-	float			m_fScale;	//拡縮.
-	D3DXVECTOR3		m_vRot;		//回転.
-	D3DXVECTOR3		m_vPos;		//位置(X,Y,Z).
+	//位置.
+	D3DXVECTOR3 m_vPos;
+
+	//モデルの回転.
+	D3DXVECTOR3 m_vRot;
+
+	//サイズ.
+	float m_fScale;
 
 	//Dx9初期化.
 	HRESULT InitDx9(HWND hWnd);

@@ -22,6 +22,9 @@ public:
 	void MoveLeftRight(const float fSpeed);
 
 protected:
+	//移動可能範囲.
+	const float MOVE_LIMIT = 30.0f;
+
 	//スキンメッシュのモデルに必要な情報.
 	struct SkinMeshState
 	{	

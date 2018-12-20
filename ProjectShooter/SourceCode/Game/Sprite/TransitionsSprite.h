@@ -134,6 +134,11 @@ public:
 		m_pMaskTexture_SRV = pMaskTexture;
 	}
 
+	//フェードアウト.
+	bool FadeOut(const float fFadeSpeed);
+	//フェードイン.
+	bool FadeIn(const float fFadeSpeed);
+
 private:
 	//スプライトを何等分するか.
 	D3DXVECTOR2 m_vDivisionQuantity;

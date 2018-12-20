@@ -44,6 +44,13 @@ void ClearScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 		if (IsHittingOfSprite(enSprite_Cursor, enSprite_ReturnButton))
 		{
 			enNextScene = enSwitchToNextScene::Title;
+
+			//ƒV[ƒ“ˆÚ“®‚ÌSE.
+			if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PushButton))
+			{
+				//SE‚ğÄ¶.
+				Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_PushButton);
+			}
 		}
 	}
 }

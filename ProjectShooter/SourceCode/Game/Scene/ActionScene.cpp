@@ -1,6 +1,6 @@
 #include "ActionScene.h"
 
-const float CAMERA_MOVE_SPEED = 0.2f;
+const float CAMERA_MOVE_SPEED = 0.4f;
 
 ActionScene::ActionScene(SCENE_NEED_POINTER PointerGroup)
 	: BaseScene(PointerGroup)
@@ -8,14 +8,11 @@ ActionScene::ActionScene(SCENE_NEED_POINTER PointerGroup)
 	, m_pPlayer(nullptr)
 	, m_pEnemy(nullptr)
 	, m_pGround(nullptr)
+	, m_pSky(nullptr)
 	, m_pBulletManager(nullptr)
-	, m_fOldCameraDistance(0.0f)
 {
 	//全サウンドを停止する.
 	Singleton<SoundManager>().GetInstance().StopSound();
-
-	//シーン移動時のSE.
-	Singleton<SoundManager>().GetInstance().PlaySE(SoundManager::enSE_PushButton);
 }
 
 ActionScene::~ActionScene()
@@ -30,6 +27,8 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	CreateSprite();
 
 	m_pCamera = new Camera(WINDOW_WIDTH,WINDOW_HEIGHT);
+	m_pCamera->SetDisplaceHorizontally(0.5f);
+	m_pCamera->SetFocusingSpacePos({ 0.0f, 0.0f, -5.0f });
 
 	m_pBulletManager = new BulletManager;
 
@@ -38,6 +37,12 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	m_pEnemy = new Enemy(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Enemy));
 
 	m_pGround = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_Ground);
+	m_pGround->SetScale(30.0f);
+	m_pGround->SetPos({ 0.0f, -1.5f, 0.0f });
+
+	m_pSky = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_SkyBox);
+	m_pSky->SetScale(10.0f);
+
 }
 
 //解放.
@@ -48,6 +53,8 @@ void ActionScene::Release()
 	SAFE_DELETE(m_pPlayer);
 
 	SAFE_DELETE(m_pEnemy);
+
+	m_pSky = nullptr;
 
 	m_pGround = nullptr;
 
@@ -89,6 +96,7 @@ void ActionScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	m_pCamera->SetLookAt(vLookAt);
 	ControlCameraMove();
 	m_pCamera->Update();
+	m_pCamera->RayHitToMesh(m_pGround);
 
 	m_pBulletManager->Update(m_pCamera->GetCameraPose(), m_pPlayer->GetPos(), m_pEnemy);
 	m_pBulletManager->CollisionJudgmentBullet(m_pEnemy->GetCollisionSphere(), m_pGround);
@@ -117,6 +125,8 @@ void ActionScene::RenderModelProduct(const int iRenderLevel)
 		m_pPlayer->RenderModel(mView, mProj);
 
 		m_pEnemy->RenderModel(mView, mProj);
+
+		m_pSky->Render(mView, mProj);
 
 		m_pGround->Render(mView, mProj);
 
@@ -160,35 +170,16 @@ void ActionScene::ControlCameraMove()
 	}
 
 	/*====/ カメラの距離 /====*/
-	//右クリック時現在の注視位置からカメラ位置までの距離を出す.
-	const float fDistance = D3DXVec3Length(&m_pCamera->GetFocusingSpacePos());
-	if (Singleton<RawInput>().GetInstance().IsRButtonDown())
-	{
-		//現在の距離を覚えておく.
-		m_fOldCameraDistance = fDistance;
-	}
-	else if (Singleton<RawInput>().GetInstance().IsRButtonUp())
-	{
-		//元の距離に戻す.
-		m_pCamera->SetOffsetZ(-(m_fOldCameraDistance - 1.0f));
-	}
-	
-	//右クリックをしている間はカメラを注視位置に近づける.
 	if (Singleton<RawInput>().GetInstance().IsRButtonHoldDown())
 	{
-		if (fDistance > 1.0f)
+		if (m_pCamera->GetDistance() > 1.0f)
 		{
-			m_pCamera->SetOffsetZ(fDistance - 1.0f);
+			m_pCamera->SetOffsetZ(1.0f);
 		}
 	}
 	else
 	{
-		//マウスホイール時.
-		if (Singleton<RawInput>().GetInstance().IsWheelForward())
-		{
-			m_pCamera->SetOffsetZ(1.0f);
-		}
-		else if (Singleton<RawInput>().GetInstance().IsWheelBackward())
+		if (m_pCamera->GetDistance() < 5.0f)
 		{
 			m_pCamera->SetOffsetZ(-1.0f);
 		}
@@ -446,11 +437,9 @@ void ActionScene::RenderDebugText()
 		m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 7));
 	}
 
-	sprintf_s(cStrDbgTxt, "MaxHp : [%i]", m_pPlayer->GetHpMax());
+	float fCamAngle = atanf(m_pCamera->GetFocusingSpacePos().y);
+	sprintf_s(cStrDbgTxt, "CamAngle : [%f]", fCamAngle);
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 8));
-
-	sprintf_s(cStrDbgTxt, "NowHp : [%i]", m_pPlayer->GetHp());
-	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 9));
 }
 
 //デバッグ中のみの操作.

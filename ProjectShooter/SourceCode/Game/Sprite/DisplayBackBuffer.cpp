@@ -205,11 +205,9 @@ void DisplayBackBuffer::InputConstantBuffer(const D3DMATRIX mWorld)
 		cd.fAlpha = m_fAlpha;
 
 		//UVç¿ïWÇìnÇ∑.
-		cd.vUV.x = ((m_vSize.x) / m_vSize.x)
-			+ (m_vUV.x / m_vSize.x);
+		cd.vUV.x = (m_vSize.x / m_vSize.x) + (m_vUV.x / m_vSize.x);
 
-		cd.vUV.y = ((m_vSize.y) / m_vSize.y)
-			+ (m_vUV.y / m_vSize.y);
+		cd.vUV.y = (m_vSize.y / m_vSize.y) + (m_vUV.y / m_vSize.y);
 
 		memcpy_s(pData.pData, pData.RowPitch, (void*)(&cd), sizeof(cd));
 

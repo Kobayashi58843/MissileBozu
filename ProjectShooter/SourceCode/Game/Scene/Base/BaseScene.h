@@ -6,6 +6,7 @@
 #include "..\\..\\..\\Singleton.h"
 
 #include "..\\..\\Camera\\Camera.h"
+#include "..\\..\\Camera\\EventCamera.h"
 
 #include "..\\..\\Model\\ModelResource\\ModelResource.h"
 
@@ -19,6 +20,7 @@
 #include "..\\..\\Sprite\\NumberSprite.h"
 #include "..\\..\\Sprite\\Sprite.h"
 #include "..\\..\\Sprite\\TransitionsSprite.h"
+#include "..\\..\\Sprite\\TitleBackgroundSprite.h"
 
 #include "..\\..\\BackBuffer.h"
 
