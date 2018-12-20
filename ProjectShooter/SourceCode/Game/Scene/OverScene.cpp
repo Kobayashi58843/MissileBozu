@@ -403,13 +403,12 @@ void OverScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, con
 	switch (iPhase)
 	{
 	case 0:
+		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
 	default:
 		break;
 	}
-
-	m_pPlayerModel->RenderModel(mView, mProj);
 
 	//êiçs.
 	PhaseProgress(iPhase);

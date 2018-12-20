@@ -311,13 +311,12 @@ void LoserScene::PhaseDrawing(const D3DXMATRIX mView, const D3DXMATRIX mProj, co
 	switch (iPhase)
 	{
 	case 0:
+		m_pPlayerModel->RenderModel(mView, mProj);
 
 		break;
 	default:
 		break;
 	}
-
-	m_pPlayerModel->RenderModel(mView, mProj);
 
 	//êiçs.
 	PhaseProgress(iPhase);
