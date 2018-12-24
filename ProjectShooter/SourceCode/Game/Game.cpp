@@ -10,7 +10,7 @@
 #include "..\\Singleton.h"
 
 //ゲーム開始時のシーン.
-const enSwitchToNextScene START_SCENE = enSwitchToNextScene::Over;
+const enSwitchToNextScene START_SCENE = enSwitchToNextScene::Starting;
 
 //フェードの速度.
 const float FADE_SPEED = 0.025f;

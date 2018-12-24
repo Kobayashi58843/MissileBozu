@@ -162,6 +162,11 @@ void ModelResource::CreateSkinModelAll(HWND hWnd, ID3D11Device* pDevice, ID3D11D
 	InitSkinModel(hWnd, pDevice, pContext);
 	CreateSkinModel("Data\\Player\\Bozu.x", enSkinModel_Player);
 	CreateSkinModel("Data\\Enemy\\Josin01.x", enSkinModel_Enemy);
+
+	for (int iStModelNo = 0; iStModelNo<enSkinModel_Max; iStModelNo++)
+	{
+		m_ppSkinModels[iStModelNo]->SetShader(enSkinModelShader_Simple);
+	}
 }
 
 HRESULT ModelResource::InitSkinModel(HWND hWnd, ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

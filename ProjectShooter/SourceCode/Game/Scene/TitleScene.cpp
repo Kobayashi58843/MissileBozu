@@ -444,7 +444,6 @@ void TitleScene::RenderBackGroundBuffSub()
 	m_pEnemyModel->RenderModel(mView, mProj);
 }
 
-
 /*====/ シーン変更関連 /====*/
 //シーン変更.
 void TitleScene::ChangeScene(enSwitchToNextScene &enNextScene)

@@ -15,6 +15,7 @@ OverScene::OverScene(SCENE_NEED_POINTER PointerGroup)
 	, m_pEventCamera(nullptr)
 	, m_pPlayerModel(nullptr)
 	, m_iPhase(0)
+	, m_bWhenProgress(true)
 	, m_iCursorAnimationCount(0)
 	, m_fCupidAddPos(0)
 {
