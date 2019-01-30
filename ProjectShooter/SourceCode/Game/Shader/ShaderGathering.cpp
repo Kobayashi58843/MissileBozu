@@ -213,6 +213,7 @@ void ShaderGathering::MakeStaticMeshShader(char* ShaderName, SHADER_ENTRY_POINT 
 	{
 		MessageBox(NULL, "頂点インプットレイアウト作成失敗", "エラー", MB_OK);
 	}
+
 	SAFE_RELEASE(pCompiledShader);
 
 	//HLSLからピクセルシェーダのブロブを作成.

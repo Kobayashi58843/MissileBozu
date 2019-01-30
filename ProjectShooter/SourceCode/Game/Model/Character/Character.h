@@ -9,6 +9,16 @@ public:
 	Character();
 	virtual ~Character();
 
+	void SetShader(const enSkinModelShader enShader)
+	{
+		m_pModel->SetShader(enShader);
+	}
+
+	enSkinModelShader GetShader() const
+	{
+		return m_pModel->GetShader();
+	}
+
 	//XV.
 	void Update();
 

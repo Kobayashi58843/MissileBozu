@@ -14,7 +14,7 @@ void ShadowMap::RenderStaticModel(
 	LPD3DXMESH const pMesh,
 	ID3D11Buffer* const pBuffPerMesh, ID3D11Buffer* const pBuffPerFrame,
 	const D3DXMATRIX &mWorld, const D3DXMATRIX &mView, const D3DXMATRIX &mProj,
-	const D3DXMATRIX &mLightView, const D3DXVECTOR3 vLightCameraPosition)
+	const D3DXMATRIX &mLightView, const D3DXVECTOR3 vLightCameraPosition, const D3DXVECTOR3 vCameraPosition)
 {
 	//シェーダのコンスタントバッファに各種データを渡す.
 	D3D11_MAPPED_SUBRESOURCE pMeshData;
@@ -72,7 +72,9 @@ void ShadowMap::RenderStaticModel(
 		//コンスタントバッファ.
 		SUB_CBUFF_STATICMESH_FOR_SHADOWMAP cb;
 
-		cb.vEye = { vLightCameraPosition.x, vLightCameraPosition.y, vLightCameraPosition.z, 0.0f };
+		cb.vLightEye = { vLightCameraPosition.x, vLightCameraPosition.y, vLightCameraPosition.z, 0.0f };
+
+		cb.vEye = { vCameraPosition.x, vCameraPosition.y, vCameraPosition.z, 0.0f };
 
 		//コピー先のバッファ,コピー先のバッファサイズ,コピー元のバッファ,コピーするサイズ.
 		memcpy_s(pFrameData.pData, pFrameData.RowPitch, (void*)(&cb), sizeof(cb));

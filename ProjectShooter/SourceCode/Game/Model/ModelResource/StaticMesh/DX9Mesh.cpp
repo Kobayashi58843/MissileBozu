@@ -487,7 +487,8 @@ void clsDX9Mesh::Render(const D3DXMATRIX &mView, const D3DXMATRIX &mProj)
 			m_pCBuffPerMesh, m_pCBuffPerFrame,
 			mWorld, mView, mProj,
 			m_ShadowMapPointers.mLightView,
-			m_ShadowMapPointers.vLightCameraPosition);
+			m_ShadowMapPointers.vLightCameraPosition,
+			m_ShadowMapPointers.vCmeraPosition);
 
 		break;
 	default:

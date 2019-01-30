@@ -34,6 +34,7 @@ private:
 
 	/*====/ カメラ関連 /====*/
 	Camera* m_pCamera;
+	EventCamera* m_pLightView;
 
 	//カメラの操作.
 	void ControlCameraMove();
@@ -48,6 +49,10 @@ private:
 	BulletManager* m_pBulletManager;
 
 	/*====/ スプライト関連 /====*/
+
+	//シャドウマップ用のバックバッファ.
+	BackBuffer* m_pDepthBuffer;
+	DisplayBackBuffer* m_pDisplayDepthBuffer;
 
 	//スプライトの作成.
 	void CreateSprite();

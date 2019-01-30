@@ -22,7 +22,10 @@ cbuffer per_mesh : register(b0)
 
 cbuffer per_frame : register(b1)
 {
-	//カメラ位置.
+	//深度テクスチャのカメラ位置.
+	float4 g_vLightEye;
+
+	//現在のカメラ位置.
 	float4 g_vEye;
 };
 
@@ -60,7 +63,7 @@ VS_OUTPUT VS_Main(
 	//ライトビューを参照するとき、手がかりとなるテクスチャー座標.
 	Out.LightTex = mul(Pos, g_mWLPT);
 
-	Out.LighViewPos = mul(g_vEye, g_mWLP);
+	Out.LighViewPos = mul(g_vLightEye, g_mWLP);
 
 	return Out;
 }
@@ -91,10 +94,19 @@ float4 PS_Main(VS_OUTPUT Input) : SV_Target
 	//	OutColor /= 4;//影.
 	//}
 
-	if (0.0f < TexValue && TexValue < 1.0f)
+	if (0.0f <= TexValue && TexValue < 1.0f)
 	{
 		OutColor /= 4.0f;
+		OutColor.a = 1.0f;
 	}
+
+	//カメラの位置と近いところを透過.
+	//float Length = abs(length(Input.PosWorld - g_vEye));
+	//if(Length <= 8)
+	//{
+	//	OutColor.a = 0.0;
+	//}
+
 
 	return OutColor;
 }

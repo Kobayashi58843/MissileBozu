@@ -51,7 +51,9 @@ float4 PS_Main(VS_OUTPUT In) : SV_Target
 {
 	float4 OutColor;
 
-	OutColor = In.Pos.z / In.Pos.w;
+	//OutColor = In.Pos.z / In.Pos.w;
+
+	OutColor = ( 0, 0, 0, 1 );
 
 	return OutColor;
 }

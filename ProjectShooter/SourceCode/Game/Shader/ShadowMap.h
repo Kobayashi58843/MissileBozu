@@ -16,7 +16,7 @@ public:
 		LPD3DXMESH const pMesh,
 		ID3D11Buffer* const pBuffPerMesh, ID3D11Buffer* const pBuffPerFrame,
 		const D3DXMATRIX &mWorld, const D3DXMATRIX &mView, const D3DXMATRIX &mProj,
-		const D3DXMATRIX &mLightView, const D3DXVECTOR3 vLightCameraPosition);
+		const D3DXMATRIX &mLightView, const D3DXVECTOR3 vLightCameraPosition, const D3DXVECTOR3 vCameraPosition);
 
 	//メッシュごとにシェーダに渡す必要があるデータ.
 	void RenderStaticModelMesh(

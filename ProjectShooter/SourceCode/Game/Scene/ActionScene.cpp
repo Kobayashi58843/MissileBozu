@@ -2,22 +2,33 @@
 
 const float CAMERA_MOVE_SPEED = 0.4f;
 
+const D3DXVECTOR3 LIGHT_CAMERA_POS = { 0.0f, 30.0f, -10.0f };
+
 ActionScene::ActionScene(SCENE_NEED_POINTER PointerGroup)
 	: BaseScene(PointerGroup)
 	, m_pCamera(nullptr)
+	, m_pLightView(nullptr)
 	, m_pPlayer(nullptr)
 	, m_pEnemy(nullptr)
 	, m_pGround(nullptr)
 	, m_pSky(nullptr)
 	, m_pBulletManager(nullptr)
+	, m_pDisplayDepthBuffer(nullptr)
 {
 	//全サウンドを停止する.
 	Singleton<SoundManager>().GetInstance().StopSound();
+
+	const D3DXVECTOR2 vBackBufferSize = { WINDOW_WIDTH, WINDOW_HEIGHT };
+	m_pDepthBuffer = new BackBuffer(m_SceneNeedPointer.pDevice, (UINT)vBackBufferSize.x, (UINT)vBackBufferSize.y);
 }
 
 ActionScene::~ActionScene()
 {
 	Release();
+
+	SAFE_DELETE(m_pDisplayDepthBuffer);
+
+	SAFE_DELETE(m_pDepthBuffer);
 }
 
 //作成.
@@ -27,8 +38,13 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	CreateSprite();
 
 	m_pCamera = new Camera(WINDOW_WIDTH,WINDOW_HEIGHT);
+	//カメラを横から覗き込むようにするために横にずらす.
 	m_pCamera->SetDisplaceHorizontally(0.5f);
+	//カメラを後ろにずらす.
 	m_pCamera->SetFocusingSpacePos({ 0.0f, 0.0f, -5.0f });
+
+	m_pLightView = new EventCamera(WINDOW_WIDTH, WINDOW_HEIGHT);
+	m_pLightView->SetLookAt({ 0.0f, 0.0f, 0.0f });
 
 	m_pBulletManager = new BulletManager;
 
@@ -37,18 +53,25 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	m_pEnemy = new Enemy(Singleton<ModelResource>().GetInstance().GetSkinModels(ModelResource::enSkinModel_Enemy));
 
 	m_pGround = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_Ground);
+	//モデルのサイズが小さいためサイズを大きくする.
 	m_pGround->SetScale(30.0f);
+	//モデルの中心位置がメッシュの中に埋まっているため位置を下に下げる.
 	m_pGround->SetPos({ 0.0f, -1.5f, 0.0f });
 
 	m_pSky = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_SkyBox);
+	//モデルのサイズが小さいためサイズを大きくする.
 	m_pSky->SetScale(10.0f);
 
+	//シャドウマップ用の深度テクスチャのカメラの位置をプレイヤーの頭上にあわせる.
+	m_pLightView->SetPos({ LIGHT_CAMERA_POS.x, LIGHT_CAMERA_POS.y, LIGHT_CAMERA_POS.z });
 }
 
 //解放.
 void ActionScene::Release()
 {
 	SAFE_DELETE(m_pCamera);
+
+	SAFE_DELETE(m_pLightView);
 
 	SAFE_DELETE(m_pPlayer);
 
@@ -122,19 +145,74 @@ void ActionScene::RenderModelProduct(const int iRenderLevel)
 	switch (iRenderLevel)
 	{
 	case 0:
+	{
+		//シャドウマップ用のカメラの.
+		mView = m_pLightView->GetView();
+
+		//レンダーターゲットをシャドウマップ用の深度テクスチャへ.
+		ID3D11RenderTargetView* pRTV = m_pDepthBuffer->GetRenderTargetView();
+
+		//レンダーターゲットに深度テクスチャをセット.
+		m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &pRTV, m_SceneNeedPointer.pBackBuffer_DSV);
+
+		//画面のクリア.
+		const float fClearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		m_SceneNeedPointer.pContext->ClearRenderTargetView(m_pDepthBuffer->GetRenderTargetView(), fClearColor);
+		m_SceneNeedPointer.pContext->ClearDepthStencilView(m_SceneNeedPointer.pBackBuffer_DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+		//プレイヤーの影を描画したいためプレイヤーを黒一色で描画する.
+		m_pPlayer->SetShader(enSkinModelShader_NoTex);
 		m_pPlayer->RenderModel(mView, mProj);
 
+		//敵の影を描画したいためプレイヤーを黒一色で描画する.
+		m_pEnemy->SetShader(enSkinModelShader_NoTex);
 		m_pEnemy->RenderModel(mView, mProj);
 
+		//レンダーターゲットをもとに戻す.
+		m_SceneNeedPointer.pContext->OMSetRenderTargets(1, &m_SceneNeedPointer.pBackBuffer_RTV, m_SceneNeedPointer.pBackBuffer_DSV);
+	}
+		break;
+	case 1:
+	{
+		//プレイヤーのシェーダーをそのまま描画するものに変える.
+		m_pPlayer->SetShader(enSkinModelShader_Simple);
+
+		//プレイヤーの描画.
+		m_pPlayer->RenderModel(mView, mProj);
+
+		//敵のシェーダーをそのまま描画するものに変える.
+		m_pEnemy->SetShader(enSkinModelShader_Simple);
+
+		//敵の描画.
+		m_pEnemy->RenderModel(mView, mProj);
+
+		//スカイボックスの描画.
 		m_pSky->Render(mView, mProj);
 
+		//シェーダーをシャドウマップに変える.
+		m_pGround->SetShader(enStaticModelShader_ShadowMap);
+
+		//シャドウマップに必要なポインタを渡す.
+		SHADOWMAP_REQUIRED_POINTER ShadowMapPointers;
+		ShadowMapPointers.pDepthTexture = m_pDepthBuffer->GetShaderResourceView();
+		ShadowMapPointers.mLightView = m_pLightView->GetView();
+		ShadowMapPointers.vLightCameraPosition = m_pLightView->GetPos();
+		ShadowMapPointers.vCmeraPosition = m_pCamera->GetPos();
+
+		m_pGround->SetShadowMapPointer(ShadowMapPointers);
+
+		//ステージを描画.
 		m_pGround->Render(mView, mProj);
 
+		//シャドウマップ以外のシェーダーに戻す.
+		m_pGround->SetShader(enStaticModelShader_Simple);
+
+		//弾の描画.
 		m_pBulletManager->Render(mView, mProj, vCamPos);
 
 		//エフェクトの描画.
 		clsEffects::GetInstance()->Render(mView, mProj, vCamPos);
-
+	}
 		break;
 	default:
 		break;
@@ -144,6 +222,14 @@ void ActionScene::RenderModelProduct(const int iRenderLevel)
 //カメラの操作.
 void ActionScene::ControlCameraMove()
 {
+	//シャドウマップ用の深度テクスチャのカメラ.
+	//シャドウマップ用のカメラの注視位置.
+	D3DXVECTOR3 vLookAt = { 0.0f, 0.0f, 0.0f };
+	m_pLightView->SetLookAt(m_pPlayer->GetPos());
+
+	//シャドウマップ用のカメラの更新.
+	m_pLightView->Update();
+
 	D3DXVECTOR2 vMouseMovingDistance = Singleton<RawInput>().GetInstance().GetMouseMovingDistance();
 
 	//マウスの移動速度で視点移動する速さを変える.
@@ -199,6 +285,11 @@ void ActionScene::RenderSpriteProduct(const int iRenderLevel)
 		}
 
 		break;
+	case MAX_RENDER_LEVEL:
+		//シャドウマップ用の深度テクスチャを確認したいときは下のコメントを外す.
+		//m_pDisplayDepthBuffer->Render();
+
+		break;
 	default:
 		break;
 	}
@@ -248,6 +339,14 @@ void ActionScene::CreateSprite()
 		m_vpSprite.push_back(new Sprite(SpriteData.vDivisionQuantity.x, SpriteData.vDivisionQuantity.y));
 		m_vpSprite[i]->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, SpriteData.sPath);
 	}
+
+	float f_Scale = 2.5f;
+
+	//シャドウマップの深度テクスチャ用スプライト作成.
+	m_pDisplayDepthBuffer = new DisplayBackBuffer(WINDOW_WIDTH / f_Scale, WINDOW_HEIGHT / f_Scale);
+	m_pDisplayDepthBuffer->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext);
+	m_pDisplayDepthBuffer->SetSRV(m_pDepthBuffer->GetShaderResourceView());
+
 }
 
 //スプライトの解放.
@@ -283,6 +382,9 @@ void ActionScene::UpdateSpritePositio(int iSpriteNo)
 	//スプライト位置.
 	D3DXVECTOR2 vPosition;
 
+	//スプライトの大きさ.
+	D3DXVECTOR2 vSize;
+
 	//Hpゲージの大きさ.
 	const float fGageScale = 0.2f;
 
@@ -292,27 +394,32 @@ void ActionScene::UpdateSpritePositio(int iSpriteNo)
 	switch (iSpriteNo)
 	{
 	case enSprite_Alignment:
+		vSize = m_vpSprite[iSpriteNo]->GetSize();
 		vPosition.x = fWindowWidthCenter;
 		vPosition.y = fWindowHeightCenter;
 
 		break;
 	case enSprite_PlayerHp:
+		vSize = m_vpSprite[iSpriteNo]->GetSize();
 		vPosition.x = (m_vpSprite[iSpriteNo]->GetSize().x / 2.0f) + fGageSpacing;
 		vPosition.y = (m_vpSprite[iSpriteNo]->GetSize().y / 2.0f) + fGageSpacing;
 
 		break;
 	case enSprite_PlayerHpFrame:
+		vSize = m_vpSprite[iSpriteNo]->GetSize();
 		//プレイヤーのHpゲージの位置にあわせる.
 		vPosition.x = m_vpSprite[enSprite_PlayerHp]->GetPos().x;
 		vPosition.y = m_vpSprite[enSprite_PlayerHp]->GetPos().y;
 
 		break;
 	case enSprite_EnemyHp:
+		vSize = m_vpSprite[iSpriteNo]->GetSize();
 		vPosition.x = WINDOW_WIDTH - ((m_vpSprite[iSpriteNo]->GetSize().x / 2.0f) + fGageSpacing);
 		vPosition.y = (m_vpSprite[iSpriteNo]->GetSize().y / 2.0f) + fGageSpacing;
 
 		break;
 	case enSprite_EnemyHpFrame:
+		vSize = m_vpSprite[iSpriteNo]->GetSize();
 		//エネミーのHpゲージの位置にあわせる.
 		vPosition.x = m_vpSprite[enSprite_EnemyHp]->GetPos().x;
 		vPosition.y = m_vpSprite[enSprite_EnemyHp]->GetPos().y;
@@ -325,6 +432,10 @@ void ActionScene::UpdateSpritePositio(int iSpriteNo)
 	}
 
 	m_vpSprite[iSpriteNo]->SetPos(vPosition.x, vPosition.y);
+
+	//シャドウマップの深度テクスチャ用スプライト位置.
+	vSize = m_pDisplayDepthBuffer->GetSize();
+	m_pDisplayDepthBuffer->SetPos(vSize.x / 2.0f, WINDOW_HEIGHT - vSize.y / 2.0f);
 }
 
 //スプライトのアニメーション.

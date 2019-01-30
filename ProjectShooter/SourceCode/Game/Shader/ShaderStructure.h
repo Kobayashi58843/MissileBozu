@@ -42,7 +42,10 @@ struct CBUFF_STATICMESH_FOR_SHADOWMAP
 
 struct SUB_CBUFF_STATICMESH_FOR_SHADOWMAP
 {
-	//カメラ位置(視点位置).
+	//陰にするカメラ位置.
+	D3DXVECTOR4 vLightEye;
+
+	//現在のカメラ位置.
 	D3DXVECTOR4 vEye;
 };
 
@@ -55,6 +58,8 @@ struct SHADOWMAP_REQUIRED_POINTER
 	D3DXMATRIX mLightView;
 	//深度テクスチャのカメラの位置.
 	D3DXVECTOR3 vLightCameraPosition;
+	//現在のカメラの位置.
+	D3DXVECTOR3 vCmeraPosition;
 };
 
 //頂点の構造体.
