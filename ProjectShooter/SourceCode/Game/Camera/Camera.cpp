@@ -19,7 +19,7 @@ const int MAX_UP_ANGLE_DEGREE = 60;
 const int MAX_DOWN_ANGLE_DEGREE = 45;
 
 //距離の限界.
-const float DISTANCE_MAX = 50.0f;
+const float DISTANCE_MAX = 100.0f;
 
 //当たり判定の大きさ.
 const float RADIUS = 0.2f;
@@ -59,7 +59,7 @@ Camera::~Camera()
 {
 }
 
-void Camera::Update()
+void Camera::Update(const bool bMoveLimitFlg)
 {
 	//カメラZ軸回転で姿勢仮更新.
 	D3DXMATRIX mRotMatV;
@@ -81,7 +81,10 @@ void Camera::Update()
 	OffsetZUpdate();
 
 	//移動制限.
-	MoveLimit();
+	if (bMoveLimitFlg)
+	{
+		MoveLimit();
+	}
 
 	//移動後カメラ姿勢更新.
 	PostureUpdate();

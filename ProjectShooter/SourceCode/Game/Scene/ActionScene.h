@@ -34,7 +34,7 @@ private:
 
 	/*====/ ƒJƒƒ‰ŠÖ˜A /====*/
 	Camera* m_pCamera;
-	EventCamera* m_pLightView;
+	Camera* m_pLightView;
 
 	//ƒJƒƒ‰‚Ì‘€ì.
 	void ControlCameraMove();

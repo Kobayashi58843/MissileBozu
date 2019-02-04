@@ -44,9 +44,9 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	//カメラを後ろにずらす.
 	m_pCamera->SetFocusingSpacePos({ 0.0f, 0.0f, -5.0f });
 
-	m_pLightView = new EventCamera(WINDOW_WIDTH, WINDOW_HEIGHT);
+	m_pLightView = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
 	//シャドウマップ用の深度テクスチャのカメラの位置を決める.
-	m_pLightView->SetPos({ LIGHT_CAMERA_POS.x, LIGHT_CAMERA_POS.y, LIGHT_CAMERA_POS.z });
+	m_pLightView->SetFocusingSpacePos(LIGHT_CAMERA_POS);
 
 	m_pBulletManager = new BulletManager;
 
@@ -117,7 +117,14 @@ void ActionScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	m_pCamera->SetLookAt(vLookAt);
 	ControlCameraMove();
 	m_pCamera->Update();
-	m_pCamera->RayHitToMesh(m_pGround);
+	//カメラの当たり判定が実装出来たらコメントを外す.
+	//m_pCamera->RayHitToMesh(m_pGround);
+
+	//シャドウマップ用のカメラの注視位置をプレイヤーの座標に設定する.
+	m_pLightView->SetLookAt(vLookAt);
+
+	//シャドウマップ用のカメラの更新.
+	m_pLightView->Update(false);
 
 	m_pBulletManager->Update(m_pCamera->GetCameraPose(), m_pPlayer->GetPos(), m_pEnemy);
 	m_pBulletManager->CollisionJudgmentBullet(m_pEnemy->GetCollisionSphere(), m_pGround);
@@ -220,12 +227,6 @@ void ActionScene::RenderModelProduct(const int iRenderLevel)
 //カメラの操作.
 void ActionScene::ControlCameraMove()
 {
-	//シャドウマップ用のカメラの注視位置をプレイヤーの座標に設定する.
-	m_pLightView->SetLookAt(m_pPlayer->GetPos());
-
-	//シャドウマップ用のカメラの更新.
-	m_pLightView->Update();
-
 	//マウスの移動速度.
 	D3DXVECTOR2 vMouseMovingDistance = Singleton<RawInput>().GetInstance().GetMouseMovingDistance();
 
@@ -282,9 +283,12 @@ void ActionScene::RenderSpriteProduct(const int iRenderLevel)
 			m_vpSprite[i]->Render();
 		}
 
-		//シャドウマップ用の深度テクスチャを確認したいときは下のコメントを外す.
-		//m_pDisplayDepthBuffer->Render();
+#if _DEBUG
 
+		//デバッグモードではシャドウマップ用の深度テクスチャを表示.
+		m_pDisplayDepthBuffer->Render();
+
+#endif//#if _DEBUG.
 		break;
 	default:
 		break;
@@ -476,12 +480,13 @@ void ActionScene::RenderDebugText()
 	sprintf_s(cStrDbgTxt, "Scene : Action");
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 0));
 
+	//マウスの移動量を表示する.
 	sprintf_s(cStrDbgTxt, "MouseMoveDis : X[%f] , Y[%f]",
 		Singleton<RawInput>().GetInstance().GetMouseMovingDistance().x,
 		Singleton<RawInput>().GetInstance().GetMouseMovingDistance().y);
-
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 1));
 
+	//左クリックされたタイミング表示する.
 	if (Singleton<RawInput>().GetInstance().IsLButtonDown())
 	{
 		sprintf_s(cStrDbgTxt, "IsLButtonDown : true");
@@ -493,6 +498,7 @@ void ActionScene::RenderDebugText()
 		m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 2));
 	}
 
+	//左クリックされているか表示する.
 	if (Singleton<RawInput>().GetInstance().IsLButtonHoldDown())
 	{
 		sprintf_s(cStrDbgTxt, "IsLButtonHoldDown : true");
@@ -504,6 +510,7 @@ void ActionScene::RenderDebugText()
 		m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 3));
 	}
 
+	//右クリックされたタイミング表示する.
 	if (Singleton<RawInput>().GetInstance().IsRButtonDown())
 	{
 		sprintf_s(cStrDbgTxt, "IsRButtonDown : true");
@@ -515,6 +522,7 @@ void ActionScene::RenderDebugText()
 		m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 4));
 	}
 
+	//右クリックされているか表示する.
 	if (Singleton<RawInput>().GetInstance().IsRButtonHoldDown())
 	{
 		sprintf_s(cStrDbgTxt, "IsRButtonHoldDown : true");
@@ -526,6 +534,7 @@ void ActionScene::RenderDebugText()
 		m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 5));
 	}
 
+	//ホイールが奥に回っているかを表示する.
 	if (Singleton<RawInput>().GetInstance().IsWheelForward())
 	{
 		sprintf_s(cStrDbgTxt, "IsWheelForward : true");
@@ -537,6 +546,7 @@ void ActionScene::RenderDebugText()
 		m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 6));
 	}
 
+	//ホイールが手前に回っているかを表示する.
 	if (Singleton<RawInput>().GetInstance().IsWheelBackward())
 	{
 		sprintf_s(cStrDbgTxt, "IsWheelBackward : true");

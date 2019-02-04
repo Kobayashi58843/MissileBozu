@@ -9,7 +9,9 @@ public:
 	~Camera();
 
 	//毎フレーム更新するもの.
-	void Update();
+	//引数 : (カメラの移動制限をするかboolで設定).
+	//true = 移動制限あり / false = 移動制限なし.
+	void Update(const bool bMoveLimitFlg = true);
 
 	//注視空間でのカメラ位置.
 	void SetFocusingSpacePos(const D3DXVECTOR3 vPos)
