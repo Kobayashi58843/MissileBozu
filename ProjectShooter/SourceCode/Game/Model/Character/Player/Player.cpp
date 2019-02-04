@@ -64,6 +64,7 @@ Player::~Player()
 {
 	DetatchModel();
 
+	//エフェクトを止める.
 	m_pEffect->StopAll();
 }
 
@@ -75,10 +76,11 @@ void Player::RayHitToMesh(clsDX9Mesh* const pTarget)
 	}
 }
 
-//Sphereとの衝突時.
-void Player::HitToSphere(SPHERE const TargetSphere)
+//Sphereとの衝突時(敵の攻撃中のみ当たり判定を発生させたいため引数に敵の現在の状態を渡す).
+void Player::HitToSphere(SPHERE const TargetSphere, enAction const TargetAction)
 {
-	if (SphereCollision(m_Collision, TargetSphere))
+	if (SphereCollision(m_Collision, TargetSphere) &&
+		TargetAction == enAction::Attack)
 	{
 		if (m_Action != enAction::Hit
 			&& m_Action != enAction::Dead)
@@ -94,10 +96,10 @@ void Player::UpdateProduct()
 
 void Player::Wait()
 {
-	//移動の入力を受け付ける.
+	//移動の入力.
 	AcceptedMoveButton();
 
-	//攻撃の入力を受け付ける.
+	//攻撃の入力.
 	AcceptedAttackButton();
 }
 
@@ -107,10 +109,10 @@ void Player::Move()
 	m_fTargetDirection += static_cast<float>D3DXToRadian(ADJUST_MODEL_ORIENTATION);
 	SpinModel(m_fTargetDirection, fTurnSpeed);
 
-	//移動の入力を受け付ける.
+	//移動の入力.
 	AcceptedMoveButton();
 
-	//攻撃の入力を受け付ける.
+	//攻撃の入力.
 	AcceptedAttackButton();
 
 	//移動キーが押されていないので待機へ.
@@ -244,7 +246,7 @@ void Player::SetAction(const enAction Action)
 	}
 }
 
-//移動の入力を受け付けるかどうか.
+//移動の入力.
 void Player::AcceptedMoveButton()
 {
 	bool bNotPushedFrontRear = false;
@@ -292,33 +294,7 @@ void Player::AcceptedMoveButton()
 //移動制限.
 void Player::MoveLimit()
 {
-	//const float fDistance = D3DXVec3Length(&m_vPos);
-
-	//if (fabs(fDistance) < MOVE_LIMIT)
-	//{
-	//	m_vOldPos = m_vPos;
-	//}
-	//else
-	//{
-	//	m_vPos = m_vOldPos;
-	//	if (Singleton<SoundManager>().GetInstance().IsStoppedFirstSE(SoundManager::enSE_PlayerMoveLimit))
-	//	{
-	//		//SEを再生.
-	//		Singleton<SoundManager>().GetInstance().PlayFirstSE(SoundManager::enSE_PlayerMoveLimit);
-
-	//		//エフェクトを再生.
-	//		m_WallHitHandle = m_pEffect->Play(m_vPos, clsEffects::enEfcType_PlayerWallHit);
-
-	//		const float fEffectScale = 0.5f;
-	//		m_pEffect->SetScale(m_WallHitHandle, { fEffectScale, fEffectScale, fEffectScale });
-
-	//		const float fYaw = m_vRot.y - static_cast<float>D3DXToRadian(90);
-	//		m_pEffect->SetRotation(m_WallHitHandle, { 0.0f, fYaw, 0.0f });
-	//	}
-	//}
-
 	m_vOldPos.y = m_vPos.y;
-	m_vPos.y = m_vOldPos.y;
 
 	if (fabs(m_vPos.x) < MOVE_LIMIT)
 	{
@@ -369,7 +345,7 @@ void Player::MoveLimit()
 	}
 }
 
-//攻撃の入力を受け付けるかどうか.
+//攻撃の入力.
 void Player::AcceptedAttackButton()
 {
 	if (m_pBulletManager->IsShot())

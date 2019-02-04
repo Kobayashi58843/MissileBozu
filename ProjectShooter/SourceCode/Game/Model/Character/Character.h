@@ -5,6 +5,17 @@
 
 class Character : public Object
 {
+protected:
+	enum class enAction : UCHAR
+	{
+		Wait,
+		Move,
+		Attack,
+		Hit,
+		Dead
+	};
+
+
 public:
 	Character();
 	virtual ~Character();
@@ -17,6 +28,12 @@ public:
 	enSkinModelShader GetShader() const
 	{
 		return m_pModel->GetShader();
+	}
+
+	//Œ»İ‚Ìó‘Ô‚ğ•Ô‚·.
+	enAction GetAction() const
+	{
+		return m_Action;
 	}
 
 	//XV.
@@ -56,15 +73,6 @@ protected:
 		int iHp;
 
 		bool bDead;
-	};
-
-	enum class enAction : UCHAR
-	{
-		Wait,
-		Move,
-		Attack,
-		Hit,
-		Dead
 	};
 
 	State m_State;

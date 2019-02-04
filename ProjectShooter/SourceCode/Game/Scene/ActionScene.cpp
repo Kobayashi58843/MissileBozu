@@ -17,9 +17,6 @@ ActionScene::ActionScene(SCENE_NEED_POINTER PointerGroup)
 {
 	//全サウンドを停止する.
 	Singleton<SoundManager>().GetInstance().StopSound();
-
-	const D3DXVECTOR2 vBackBufferSize = { WINDOW_WIDTH, WINDOW_HEIGHT };
-	m_pDepthBuffer = new BackBuffer(m_SceneNeedPointer.pDevice, (UINT)vBackBufferSize.x, (UINT)vBackBufferSize.y);
 }
 
 ActionScene::~ActionScene()
@@ -34,6 +31,10 @@ ActionScene::~ActionScene()
 //作成.
 void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 {
+	//深度テクスチャ用のバッファの作成.
+	const D3DXVECTOR2 vBackBufferSize = { WINDOW_WIDTH, WINDOW_HEIGHT };
+	m_pDepthBuffer = new BackBuffer(m_SceneNeedPointer.pDevice, (UINT)vBackBufferSize.x, (UINT)vBackBufferSize.y);
+
 	//スプライトの作成.
 	CreateSprite();
 
@@ -44,7 +45,8 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	m_pCamera->SetFocusingSpacePos({ 0.0f, 0.0f, -5.0f });
 
 	m_pLightView = new EventCamera(WINDOW_WIDTH, WINDOW_HEIGHT);
-	m_pLightView->SetLookAt({ 0.0f, 0.0f, 0.0f });
+	//シャドウマップ用の深度テクスチャのカメラの位置を決める.
+	m_pLightView->SetPos({ LIGHT_CAMERA_POS.x, LIGHT_CAMERA_POS.y, LIGHT_CAMERA_POS.z });
 
 	m_pBulletManager = new BulletManager;
 
@@ -55,33 +57,28 @@ void ActionScene::CreateProduct(const enSwitchToNextScene enNextScene)
 	m_pGround = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_Ground);
 	//モデルのサイズが小さいためサイズを大きくする.
 	m_pGround->SetScale(30.0f);
-	//モデルの中心位置がメッシュの中に埋まっているため位置を下に下げる.
+	//モデルの中心位置がメッシュの中に埋まっているため位置を下に下げて調整する.
 	m_pGround->SetPos({ 0.0f, -1.5f, 0.0f });
 
 	m_pSky = Singleton<ModelResource>().GetInstance().GetStaticModels(ModelResource::enStaticModel_SkyBox);
 	//モデルのサイズが小さいためサイズを大きくする.
 	m_pSky->SetScale(10.0f);
-
-	//シャドウマップ用の深度テクスチャのカメラの位置をプレイヤーの頭上にあわせる.
-	m_pLightView->SetPos({ LIGHT_CAMERA_POS.x, LIGHT_CAMERA_POS.y, LIGHT_CAMERA_POS.z });
 }
 
 //解放.
 void ActionScene::Release()
 {
-	SAFE_DELETE(m_pCamera);
-
-	SAFE_DELETE(m_pLightView);
+	SAFE_DELETE(m_pEnemy);
 
 	SAFE_DELETE(m_pPlayer);
 
-	SAFE_DELETE(m_pEnemy);
-
-	m_pSky = nullptr;
-
-	m_pGround = nullptr;
-
 	SAFE_DELETE(m_pBulletManager);
+
+	SAFE_DELETE(m_pLightView);
+
+	SAFE_DELETE(m_pCamera);
+
+	SAFE_DELETE(m_pDepthBuffer);
 
 	ReleaseSprite();
 }
@@ -110,8 +107,9 @@ void ActionScene::UpdateProduct(enSwitchToNextScene &enNextScene)
 	m_pEnemy->DecideTargetDirection(m_pPlayer->GetPos());
 	m_pEnemy->Update();
 	m_pEnemy->RayHitToMesh(m_pGround);
-
-	m_pPlayer->HitToSphere(m_pEnemy->GetCollisionSphere());
+	
+	//プレイヤーのスフィアが敵の攻撃中に敵のスフィアと衝突しているか.
+	m_pPlayer->HitToSphere(m_pEnemy->GetCollisionSphere(), m_pEnemy->GetAction());
 
 	//カメラ更新.
 	D3DXVECTOR3 vLookAt = m_pPlayer->GetPos();
@@ -222,14 +220,13 @@ void ActionScene::RenderModelProduct(const int iRenderLevel)
 //カメラの操作.
 void ActionScene::ControlCameraMove()
 {
-	//シャドウマップ用の深度テクスチャのカメラ.
-	//シャドウマップ用のカメラの注視位置.
-	D3DXVECTOR3 vLookAt = { 0.0f, 0.0f, 0.0f };
+	//シャドウマップ用のカメラの注視位置をプレイヤーの座標に設定する.
 	m_pLightView->SetLookAt(m_pPlayer->GetPos());
 
 	//シャドウマップ用のカメラの更新.
 	m_pLightView->Update();
 
+	//マウスの移動速度.
 	D3DXVECTOR2 vMouseMovingDistance = Singleton<RawInput>().GetInstance().GetMouseMovingDistance();
 
 	//マウスの移動速度で視点移動する速さを変える.
@@ -278,14 +275,13 @@ void ActionScene::RenderSpriteProduct(const int iRenderLevel)
 {
 	switch (iRenderLevel)
 	{
-	case 0:
+	case MAX_RENDER_LEVEL:
+		//プレイヤーやエネミーのHPなどのUIを表示.
 		for (unsigned int i = 0; i < m_vpSprite.size(); i++)
 		{
 			m_vpSprite[i]->Render();
 		}
 
-		break;
-	case MAX_RENDER_LEVEL:
 		//シャドウマップ用の深度テクスチャを確認したいときは下のコメントを外す.
 		//m_pDisplayDepthBuffer->Render();
 
@@ -338,6 +334,8 @@ void ActionScene::CreateSprite()
 		//配列を一つ増やす.
 		m_vpSprite.push_back(new Sprite(SpriteData.vDivisionQuantity.x, SpriteData.vDivisionQuantity.y));
 		m_vpSprite[i]->Create(m_SceneNeedPointer.pDevice, m_SceneNeedPointer.pContext, SpriteData.sPath);
+		m_vpSprite[i]->SetDispFlg(true);
+		m_vpSprite[i]->SetAlpha(1.0f);
 	}
 
 	float f_Scale = 2.5f;
@@ -455,6 +453,8 @@ void ActionScene::UpdateSpriteAnimation(int iSpriteNo)
 		break;
 	case enSprite_EnemyHp:
 		m_vpSprite[iSpriteNo]->SpriteAsGage(m_pEnemy->GetHpMax(), m_pEnemy->GetHp(), fGageMoveSpeed);
+		//画像を反転.
+		m_vpSprite[iSpriteNo]->SetRot({ 0.0f, D3DXToRadian(180), 0.0f });
 
 		break;
 	case enSprite_EnemyHpFrame:
@@ -547,10 +547,6 @@ void ActionScene::RenderDebugText()
 		sprintf_s(cStrDbgTxt, "IsWheelBackward : false");
 		m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 7));
 	}
-
-	float fCamAngle = atanf(m_pCamera->GetFocusingSpacePos().y);
-	sprintf_s(cStrDbgTxt, "CamAngle : [%f]", fCamAngle);
-	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 8));
 }
 
 //デバッグ中のみの操作.

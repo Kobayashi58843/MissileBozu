@@ -44,7 +44,7 @@ public:
 
 private:
 	//Hp‚ÌÅ‘å’l.
-	const int m_iMaxHp = 5;
+	const int m_iMaxHp = 10;
 
 	//ƒ‚ƒfƒ‹‚ÉŒü‚©‚¹‚½‚¢•ûŒü.
 	float m_fTargetDirection;

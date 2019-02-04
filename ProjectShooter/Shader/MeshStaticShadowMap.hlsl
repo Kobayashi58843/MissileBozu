@@ -72,10 +72,11 @@ VS_OUTPUT VS_Main(
 float4 PS_Main(VS_OUTPUT Input) : SV_Target
 {
 	float4 OutColor;
+	float4 TexColor;
 
 	//テクスチャカラー.
 	float4 Tex = g_Tex.Sample(g_samLinearTex, Input.Tex);
-	OutColor = Tex;
+	TexColor = Tex;
 
 	/*====/ シャドウマップ /====*/
 
@@ -88,23 +89,24 @@ float4 PS_Main(VS_OUTPUT Input) : SV_Target
 	////深度の差.
 	//const float fDepthDif = abs(TexValue - LightLength);
 	////陰にする値.
-	//const float fDepthHaveShade = 0.04f;
+	//const float fDepthHaveShade = 0.04;
 	//if (fDepthDif > fDepthHaveShade)
 	//{
 	//	OutColor /= 4;//影.
 	//}
 
-	if (0.0f <= TexValue && TexValue < 1.0f)
+	OutColor = TexColor;
+	if (0 <= TexValue && TexValue < 1)
 	{
-		OutColor /= 4.0f;
-		OutColor.a = 1.0f;
+		OutColor /= 4;
+		OutColor.a = 1;
 	}
 
 	//カメラの位置と近いところを透過.
 	//float Length = abs(length(Input.PosWorld - g_vEye));
 	//if(Length <= 8)
 	//{
-	//	OutColor.a = 0.0;
+	//	OutColor.a = 0;
 	//}
 
 

@@ -39,12 +39,12 @@ public:
 	//レイとメッシュの衝突時.
 	void RayHitToMesh(clsDX9Mesh* const pTarget);
 
-	//Sphereとの衝突時.
-	void HitToSphere(SPHERE const TargetSphere);
+	//Sphereとの衝突時(敵の攻撃中のみ当たり判定を発生させたいため引数に敵の現在の状態を渡す).
+	void HitToSphere(SPHERE const TargetSphere, enAction const TargetAction);
 
 private:
 	//Hpの最大値.
-	const int m_iMaxHp = 8;
+	const int m_iMaxHp = 5;
 
 	bool m_bPushedMoveButtonFlg;
 
@@ -78,12 +78,12 @@ private:
 	//アクションの切り替え.
 	void SetAction(const enAction Action);
 
-	//移動の入力を受け付けるかどうか.
+	//移動の入力.
 	void AcceptedMoveButton();
 
 	//移動制限.
 	void MoveLimit();
 
-	//攻撃の入力を受け付けるかどうか.
+	//攻撃の入力.
 	void AcceptedAttackButton();
 };

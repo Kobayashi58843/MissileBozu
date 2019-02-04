@@ -362,9 +362,14 @@ HRESULT clsDX9Mesh::LoadXMesh(LPSTR fileName)
 	}
 
 	//深度テクスチャ用サンプラー作成.
-	SamDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	SamDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	SamDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	SamDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	SamDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	SamDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	//境界色を白に設定する.
+	SamDesc.BorderColor[0] = 1.0f;
+	SamDesc.BorderColor[1] = 1.0f;
+	SamDesc.BorderColor[2] = 1.0f;
+	SamDesc.BorderColor[3] = 1.0f;
 
 	if (FAILED(m_pDevice11->CreateSamplerState(&SamDesc, &m_pSampleLinearDepth)))
 	{
