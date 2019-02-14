@@ -3,17 +3,26 @@
 
 #include "..\\..\\..\\Singleton.h"
 
+//’e‚ÌÅ‘å”.
+const int BULLET_MAX = 64;
+
+//’e‚Ì“–‚½‚è”»’è‚Ì‘å‚«‚³.
+const float BULLET_RADIUS = 0.5f;
+
+//’e‚Ì‘å‚«‚³.
+const float BULLET_SCALE = 0.5f;
+
 BulletManager::BulletManager()
 	: m_pEnemy(nullptr)
 {
 	//ƒ|ƒCƒ“ƒ^‚ğ“®“I‚ÉŠm•Û.
-	m_ppBullet = new Bullet*[m_iBulletMax];
+	m_ppBullet = new Bullet*[BULLET_MAX];
 
 
-	for ( int i = 0; i < m_iBulletMax; i++)
+	for ( int i = 0; i < BULLET_MAX; i++)
 	{
 		m_ppBullet[i] = nullptr;
-		m_ppBullet[i] = new Bullet(m_fBulletRadius, m_fBulletScale);
+		m_ppBullet[i] = new Bullet(BULLET_RADIUS, BULLET_SCALE);
 	}
 
 	D3DXMatrixIdentity(&m_mShotMoveMat);
@@ -22,7 +31,7 @@ BulletManager::BulletManager()
 
 BulletManager::~BulletManager()
 {
-	for ( int i = 0; i < m_iBulletMax; i++)
+	for ( int i = 0; i < BULLET_MAX; i++)
 	{
 		//SAFE_DELETE_ARRAY(m_ppBullet[i]);
 		if (m_ppBullet[i] != nullptr)
@@ -41,7 +50,7 @@ void BulletManager::Update(const D3DXMATRIX mShotMoveMat, const D3DXVECTOR3 vSho
 
 	m_pEnemy = pEnemy;
 
-	for ( int i = 0; i < m_iBulletMax; i++)
+	for ( int i = 0; i < BULLET_MAX; i++)
 	{
 		m_ppBullet[i]->Update(vShotPosition);
 	}
@@ -50,7 +59,7 @@ void BulletManager::Update(const D3DXMATRIX mShotMoveMat, const D3DXVECTOR3 vSho
 //•`‰æ.
 void BulletManager::Render(const D3DXMATRIX &mView, const D3DXMATRIX &mProj, const D3DXVECTOR3 &vEye)
 {
-	for ( int i = 0; i < m_iBulletMax; i++)
+	for ( int i = 0; i < BULLET_MAX; i++)
 	{
 		m_ppBullet[i]->Render(mView, mProj, vEye);
 	}
@@ -59,7 +68,7 @@ void BulletManager::Render(const D3DXMATRIX &mView, const D3DXMATRIX &mProj, con
 //’e‚Ì“–‚½‚è”»’è.
 void BulletManager::CollisionJudgmentBullet(const SPHERE TargetSphere, clsDX9Mesh* const pTargetMesh)
 {
-	for ( int i = 0; i < m_iBulletMax; i++)
+	for ( int i = 0; i < BULLET_MAX; i++)
 	{
 		//”­Ë‚³‚ê‚Ä‚¢‚È‚¢ê‡‚ÍŸ‚Ì”»’è‚Ö.
 		if (!m_ppBullet[i]->IsShotFlg())
@@ -94,7 +103,7 @@ bool BulletManager::IsShot()
 		return false;
 	}
 
-	for ( int i = 0; i < m_iBulletMax; i++)
+	for ( int i = 0; i < BULLET_MAX; i++)
 	{
 		//”­Ë‚³‚ê‚Ä‚¢‚éê‡‚ÍŸ‚Ö.
 		if (m_ppBullet[i]->IsShotFlg())

@@ -95,6 +95,8 @@ PSSkinIn VS(VSSkinIn input)
 	output.Norm = normalize(mul(vSkinned.Norm, (float3x3)g_mW));
 	output.Tex = input.Tex;
 
+	output.Color = float4( 0, 0, 0, 1 );
+
 	return output;
 }
 

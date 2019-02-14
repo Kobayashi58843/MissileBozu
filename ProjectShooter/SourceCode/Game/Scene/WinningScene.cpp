@@ -657,9 +657,6 @@ void WinningScene::RenderDebugText()
 
 	sprintf_s(cStrDbgTxt, "Phase : [%i]", m_iPhase);
 	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 3));
-
-	sprintf_s(cStrDbgTxt, "SkyPos : ( %f, &f, %f )", m_pSky->GetPos().x, m_pSky->GetPos().y, m_pSky->GetPos().z);
-	m_pDebugText->Render(cStrDbgTxt, 0, 50 + (50 * 3));
 }
 
 //デバッグ中のみの操作.

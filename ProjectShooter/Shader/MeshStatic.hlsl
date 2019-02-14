@@ -23,7 +23,7 @@ struct VS_OUTPUT
 //バーテックスシェーダ.
 VS_OUTPUT VS_Main(
 	float4 Pos	: POSITION,
-	float4 Norm : NORMAL,
+	float3 Norm : NORMAL,
 	float2 Tex : TEXCOORD)
 {
 	VS_OUTPUT Out = (VS_OUTPUT)0;
@@ -32,9 +32,9 @@ VS_OUTPUT VS_Main(
 	Out.Pos = mul(Pos, g_mWVP);
 
 	//法線をモデルの姿勢に合わせる : モデルが回転すれば法線も回転させる必要があるため.
-	Out.Normal = mul(Norm, (float3x3)g_mW);
+	Out.Normal = float3(mul(Norm, (float3x3)g_mW));
 
-	float3 PosWorld = mul(Pos, g_mW);
+	float4 PosWorld = mul(Pos, g_mW);
 	Out.PosWorld = mul(Pos, g_mW);
 
 	//テクスチャ座標.
@@ -56,7 +56,7 @@ float4 PS_Main(VS_OUTPUT In) : SV_Target
 //バーテックスシェーダ.
 VS_OUTPUT VS_NoTex(
 float4 Pos	: POSITION,
-float4 Norm : NORMAL)
+float3 Norm : NORMAL)
 {
 	VS_OUTPUT Out = (VS_OUTPUT)0;
 
@@ -66,7 +66,7 @@ float4 Norm : NORMAL)
 	//法線をモデルの姿勢に合わせる : モデルが回転すれば法線も回転させる必要があるため.
 	Out.Normal = mul(Norm, (float3x3)g_mW);
 
-	float3 PosWorld = mul(Pos, g_mW);
+	float4 PosWorld = mul(Pos, g_mW);
 	Out.PosWorld = mul(Pos, g_mW);
 
 	return Out;

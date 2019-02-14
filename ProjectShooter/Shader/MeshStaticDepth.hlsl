@@ -24,7 +24,7 @@ struct VS_OUTPUT
 //バーテックスシェーダ.
 VS_OUTPUT VS_Main(
 	float4 Pos	: POSITION,
-	float4 Norm : NORMAL,
+	float3 Norm : NORMAL,
 	float2 Tex : TEXCOORD)
 {
 	VS_OUTPUT Out = (VS_OUTPUT)0;
@@ -35,7 +35,7 @@ VS_OUTPUT VS_Main(
 	//法線をモデルの姿勢に合わせる : モデルが回転すれば法線も回転させる必要があるため.
 	Out.Normal = mul(Norm, (float3x3)g_mW);
 
-	float3 PosWorld = mul(Pos, g_mW);
+	float4 PosWorld = mul(Pos, g_mW);
 		Out.PosWorld = mul(Pos, g_mW);
 
 	//テクスチャ座標.
@@ -53,7 +53,7 @@ float4 PS_Main(VS_OUTPUT In) : SV_Target
 
 	//OutColor = In.Pos.z / In.Pos.w;
 
-	OutColor = ( 0, 0, 0, 1 );
+	OutColor = float4( 0, 0, 0, 1 );
 
 	return OutColor;
 }

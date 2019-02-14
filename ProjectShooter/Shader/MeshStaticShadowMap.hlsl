@@ -43,7 +43,7 @@ struct VS_OUTPUT
 //バーテックスシェーダ.
 VS_OUTPUT VS_Main(
 	float4 Pos	: POSITION,
-	float4 Norm : NORMAL,
+	float3 Norm : NORMAL,
 	float2 Tex : TEXCOORD)
 {
 	VS_OUTPUT Out = (VS_OUTPUT)0;
@@ -54,7 +54,7 @@ VS_OUTPUT VS_Main(
 	//法線をモデルの姿勢に合わせる : モデルが回転すれば法線も回転させる必要があるため.
 	Out.Normal = mul(Norm, (float3x3)g_mW);
 
-	float3 PosWorld = mul(Pos, g_mW);
+	float4 PosWorld = mul(Pos, g_mW);
 	Out.PosWorld = mul(Pos, g_mW);
 
 	//テクスチャ座標.
@@ -81,7 +81,7 @@ float4 PS_Main(VS_OUTPUT Input) : SV_Target
 	/*====/ シャドウマップ /====*/
 
 	Input.LightTex /= Input.LightTex.w;
-	float TexValue = g_DepthTex.Sample(g_samLinearDepth, Input.LightTex);
+	float4 TexValue = g_DepthTex.Sample(g_samLinearDepth, float2( Input.LightTex.x, Input.LightTex.y));
 
 	////float LightLength = Input.LighViewPos.z / Input.LighViewPos.w;
 	//float LightLength = Input.Pos.z / Input.Pos.w;
@@ -96,7 +96,7 @@ float4 PS_Main(VS_OUTPUT Input) : SV_Target
 	//}
 
 	OutColor = TexColor;
-	if (0 <= TexValue && TexValue < 1)
+	if (0 <= TexValue.x && TexValue.x < 1)
 	{
 		OutColor /= 4;
 		OutColor.a = 1;

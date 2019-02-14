@@ -23,15 +23,6 @@ public:
 	bool IsShot();
 
 private:
-	//’e‚ÌÅ‘å”.
-	const int m_iBulletMax = 64;
-
-	//’e‚Ì“–‚½‚è”»’è‚Ì‘å‚«‚³.
-	const float m_fBulletRadius = 0.5f;
-
-	//’e‚Ì‘å‚«‚³.
-	const float m_fBulletScale = 0.5f;
-
 	Bullet** m_ppBullet;
 
 	D3DXMATRIX m_mShotMoveMat;
