@@ -1,6 +1,6 @@
 #pragma once
 //警告についてのコード分析を無効にする.4005:再定義.
-#pragma warning( disable:4005 )	
+#pragma warning( disable:4005 )
 
 /*========/ インクルード /========*/
 #include "MyMacro.h"
