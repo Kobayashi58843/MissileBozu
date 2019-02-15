@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include <assert.h>
+#include <memory>
 
 #include <D3DX9.h>
 #include <D3DX11.h>

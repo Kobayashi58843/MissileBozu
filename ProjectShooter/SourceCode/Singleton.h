@@ -27,8 +27,8 @@ public:
 	{
 		//1度だけ「Create」関数を呼び出す.
 		std::call_once(m_InitFlag, Create);
-		assert(m_pInstance);
-		return *m_pInstance;
+		assert(s_upInstance);
+		return *s_upInstance;
 	}
 
 private:
@@ -36,7 +36,7 @@ private:
 	static void Create()
 	{
 		//クラスを作成.
-		m_pInstance = new T;
+		std::unique_ptr<T> s_upInstance(new T);
 
 		//破棄用の関数を登録.
 		SingletonFinalizer::AddFinalizer(&Singleton<T>::Destroy);
@@ -45,14 +45,14 @@ private:
 	//破棄用の関数を登録.
 	static void Destroy()
 	{
-		SAFE_DELETE(m_pInstance);
+		s_upInstance.release();
 	}
 
 	//coll_once()関数のためのフラグ.
 	static std::once_flag m_InitFlag;
 	//インスタンス.
-	static T* m_pInstance;
+	static std::unique_ptr<T> s_upInstance;
 };
 
 template <typename T> std::once_flag Singleton<T>::m_InitFlag;
-template <typename T> T* Singleton<T>::m_pInstance = nullptr;
+template <typename T> T* Singleton<T>::s_upInstance = nullptr;
